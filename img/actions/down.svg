@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   version="1.0"
+   width="128"
+   height="128"
+   viewBox="0 0 56 64"
+   id="Livello_1"
+   xml:space="preserve"><defs
+   id="defs15"><linearGradient
+     id="linearGradient3291"><stop
+       style="stop-color:#000000;stop-opacity:1"
+       offset="0"
+       id="stop3293" /><stop
+       style="stop-color:#000000;stop-opacity:0"
+       offset="1"
+       id="stop3295" /></linearGradient><radialGradient
+     cx="63.912209"
+     cy="115.70919"
+     r="63.912209"
+     fx="63.912209"
+     fy="115.7093"
+     id="radialGradient3336"
+     xlink:href="#linearGradient3291"
+     gradientUnits="userSpaceOnUse"
+     gradientTransform="matrix(1,0,0,0.197802,0,92.82166)" /><linearGradient
+     x1="28.0005"
+     y1="64"
+     x2="28.0005"
+     y2="0.00048828119"
+     id="linearGradient2183"
+     xlink:href="#XMLID_2_"
+     gradientUnits="userSpaceOnUse" /></defs>
+
+<linearGradient
+   x1="28.0005"
+   y1="64"
+   x2="28.0005"
+   y2="0.00048828119"
+   id="XMLID_2_"
+   gradientUnits="userSpaceOnUse">
+	<stop
+   style="stop-color:#888a85;stop-opacity:1"
+   offset="0"
+   id="stop6" />
+	<stop
+   style="stop-color:#000000;stop-opacity:1"
+   offset="0.5"
+   id="stop8" />
+	<stop
+   style="stop-color:#888a85;stop-opacity:1"
+   offset="1"
+   id="stop10" />
+</linearGradient>
+
+<polygon
+   points="56,64 0,32 56,0 56,64 "
+   transform="matrix(0,-0.5,0.5,0,12,44)"
+   style="fill:url(#linearGradient2183)"
+   id="polygon2181" /><path
+   d="M 127.82442,115.70919 C 127.82442,122.69116 99.209949,128.35117 63.91221,128.35117 C 28.614471,128.35117 -1.1622574e-08,122.69116 3.4646878e-18,115.70919 C -1.1622583e-08,108.72722 28.614471,103.06721 63.91221,103.06721 C 99.209949,103.06721 127.82442,108.72722 127.82442,115.70919 L 127.82442,115.70919 z"
+   transform="matrix(0.3755151,0,0,0.2373047,3.9999999,33.541663)"
+   style="opacity:0.1;fill:url(#radialGradient3336);fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:0;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:4;stroke-opacity:1"
+   id="path1563" /></svg>

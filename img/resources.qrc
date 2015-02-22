@@ -1,0 +1,56 @@
+<RCC>
+    <qresource prefix="/pleview/misc">
+        <file>logo.png</file>
+        <file>config_map.png</file>
+        <file>config_lower.png</file>
+        <file>config_upper.png</file>
+        <file>config_axes.png</file>
+        <file>config_colors.png</file>
+        <file>grid-z.svg</file>
+        <file>grid-u.svg</file>
+        <file>matrix-full.svg</file>
+        <file>matrix-x.svg</file>
+        <file>matrix-xy.svg</file>
+        <file>matrix-y.svg</file>
+        <file>matrix.svg</file>
+        <file>config_axis_scales.png</file>
+        <file>dialog-error.svg</file>
+        <file>dialog-info.svg</file>
+        <file>dialog-warning.svg</file>
+        <file>dialog-noinfo.svg</file>
+    </qresource>
+    <qresource prefix="/icons">
+        <file>actions/document-open.svg</file>
+        <file>actions/window-close.svg</file>
+        <file>actions/configure.svg</file>
+        <file>actions/document-print.svg</file>
+        <file>actions/document-save-as.svg</file>
+        <file>actions/document-save.svg</file>
+        <file>actions/edit-copy.svg</file>
+        <file>actions/zoom-fit-best.svg</file>
+        <file>actions/zoom-in.svg</file>
+        <file>actions/transform-move.svg</file>
+        <file>actions/zoom_and_move.svg</file>
+        <file>actions/zoom.svg</file>
+        <file>actions/colormap.png</file>
+        <file>actions/plugin-add.png</file>
+        <file>actions/plugin.png</file>
+        <file>actions/filter.png</file>
+        <file>actions/up.svg</file>
+        <file>actions/down.svg</file>
+        <file>actions/editdelete.svg</file>
+        <file>actions/help_about.svg</file>
+        <file>actions/file_export.svg</file>
+        <file>actions/fileprint.svg</file>
+        <file>actions/gear.svg</file>
+        <file>actions/edit-paste.svg</file>
+        <file>actions/file_import.svg</file>
+    </qresource>
+    <qresource prefix="/plugins">
+        <file>plugins/zeemanplugin-e0.png</file>
+        <file>plugins/zeemanplugin-delta0.png</file>
+        <file>plugins/zeemanplugin-gamma.png</file>
+        <file>plugins/zeemanplugin-g.png</file>
+        <file>plugins/zeemanplugin-formula.png</file>
+    </qresource>
+</RCC>
