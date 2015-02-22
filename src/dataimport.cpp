@@ -199,7 +199,7 @@ GridData2D * AsciiSerialImport::read(QIODevice * device, bool interactive, QWidg
     // estimate total size
     int pos1 = device->pos();
     int estimate = (device->size() / (pos1 - pos0)) * values.size();
-    estimate += 2 * values.size(); // it's better to over-estimate than under-estimate
+    estimate += 2 * values.size(); // from performance point of view it's better to over-estimate than under-estimate
     values.reserve(estimate);
 
     bool prev = false;
@@ -223,8 +223,12 @@ GridData2D * AsciiSerialImport::read(QIODevice * device, bool interactive, QWidg
     }
 
     if(xs.size() * ys.size() > 1e7) // check for sanity
+    {
+        Pleview::log()->error("Total number of pixels exceeds 10^7");
         return 0; // error
+    }
 
+    // append missing values in case the last spectrum is not complete
     while(values.size() < xs.size() * ys.size())
         values.append(0);
 

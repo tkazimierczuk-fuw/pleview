@@ -19,6 +19,7 @@ public:
 
     void info(const QString &message);
     void warning(const QString &message);
+    void error(const QString &message);
     QWidget * statusBarWidget();
 
 public slots:

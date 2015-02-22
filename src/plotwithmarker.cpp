@@ -10,6 +10,8 @@ PlotWithMarker::PlotWithMarker(int direction, PlotRangesManager * plotRangesMana
     //this->setMargin(10);
     this->setFocusPolicy(Qt::ClickFocus);
 
+    setContentsMargins(4,4,4,4); // space needed to draw a frame in case the plot is selected
+
     marker = new DoubleMarker();
     marker->attach(this);
     marker->setItemAttribute(QwtPlotItem::AutoScale, false);
@@ -96,7 +98,7 @@ void PlotWithMarker::paintEvent(QPaintEvent * event) {
 
     if(_selected) {
         QRect rect = this->contentsRect();
-        rect.adjust(5, 5, -5, -5);
+        rect.adjust(-2, -2, 2, 2);
         QPainter painter(this);
         painter.drawRect(rect);
         painter.end();
@@ -110,7 +112,7 @@ void PlotWithMarker::focusInEvent(QFocusEvent * event) {
 
 
 void PlotWithMarker::select(bool state) {
-    if(state ^ _selected) { /* TODO: check ^ semantics */
+    if(state ^ _selected) {
         _selected = state;
         emit(selected(state));
         update();

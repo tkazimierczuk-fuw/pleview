@@ -52,6 +52,11 @@ void Log::warning(const QString &message) {
 }
 
 
+void Log::error(const QString &message) {
+    warning(message);
+}
+
+
 void Log::show(QWidget *parent) {
     if(dialog) {
         dialog->setParent(parent);
