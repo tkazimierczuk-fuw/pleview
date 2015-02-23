@@ -2,12 +2,11 @@ PROJECT(pleview)
 
 CMAKE_MINIMUM_REQUIRED (VERSION 3.0)
 
+IF(UNIX)
+SET(CMAKE_CXX_FLAGS "-std=c++11")
+ENDIF(UNIX)
 
 SET(CMAKE_BUILD_TYPE Release)
-
-IF(UNIX)
-  SET(CMAKE_CXX_FLAGS "-std=c++11")
-ENDIF(UNIX)
 
 SET(QT_USE_QTXML true)
 SET(QT_USE_QTSVG true)
@@ -39,7 +38,7 @@ ADD_SUBDIRECTORY(zlib)
 
 
 SET(PLEVIEW_VERSION_MAJOR "0")
-SET(PLEVIEW_VERSION_MINOR "18")
+SET(PLEVIEW_VERSION_MINOR "pre19")
 SET(PLEVIEW_VERSION "${PLEVIEW_VERSION_MAJOR}.${PLEVIEW_VERSION_MINOR}")
 ADD_DEFINITIONS("-DPLEVIEW_VERSION=\"${PLEVIEW_VERSION}\"")
 
@@ -95,10 +94,6 @@ QT5_ADD_RESOURCES( RC_SRCS  ${pleview_SOURCE_DIR}/img/resources.qrc)
 ADD_EXECUTABLE(pleview WIN32 ${Pleview_SRCS} ${MOC_SRCS} ${RC_SRCS} ${pleview_SOURCE_DIR}/img/pleview.rc)
 TARGET_LINK_LIBRARIES(pleview Qt5::Widgets Qt5::Svg Qt5::PrintSupport Qt5::Concurrent qwt-tk muparser zlib)
 
-IF(WIN32)
-# TARGET_LINK_LIBRARIES(pleview ${QT_QTMAIN_LIBRARY})
-# SET_PROPERTY(TARGET pleview PROPERTY ENABLE_EXPORTS 1)
-ENDIF(WIN32)
 
 #ADD_SUBDIRECTORY(src/plugins)
 
@@ -126,21 +121,24 @@ IF(UNIX AND NOT APPLE)
 ENDIF(UNIX AND NOT APPLE)
 
 
+GET_TARGET_PROPERTY(QtCore_dll         Qt5::Core         LOCATION_Release)
+GET_TARGET_PROPERTY(QtGui_dll          Qt5::Gui          LOCATION_Release)
+GET_TARGET_PROPERTY(QtWidgets_dll      Qt5::Widgets      LOCATION_Release)
+GET_TARGET_PROPERTY(QtSvg_dll          Qt5::Svg          LOCATION_Release)
+GET_TARGET_PROPERTY(QtPrintSupport_dll Qt5::PrintSupport LOCATION_Release)
 
+#probably qsvgicon engine
+
+ 
 IF(WIN32)
      INSTALL(FILES
-         "${QT_LIBRARY_DIR}/../bin/QtCore${QT_VERSION_MAJOR}.dll"
-         "${QT_LIBRARY_DIR}/../bin/QtXml${QT_VERSION_MAJOR}.dll"
-         "${QT_LIBRARY_DIR}/../bin/QtSvg${QT_VERSION_MAJOR}.dll"
-		 "${QT_LIBRARY_DIR}/../bin/QtSvg${QT_VERSION_MAJOR}.dll"
-         "${QT_LIBRARY_DIR}/../bin/QtGui${QT_VERSION_MAJOR}.dll"
-         "${QT_LIBRARY_DIR}/../plugins/iconengines/qsvgicon${QT_VERSION_MAJOR}.dll"
+         ${QtCore_dll} ${QtGui_dll} ${QtWidgets_dll} ${QtSvg_dll} ${QtPrintSupport_dll}
          DESTINATION bin
      )
-     INSTALL(FILES
-         "${QT_LIBRARY_DIR}/../plugins/iconengines/qsvgicon${QT_VERSION_MAJOR}.dll"        
-          DESTINATION bin/iconengines
-     )
+#     INSTALL(FILES
+#         "${QT_LIBRARY_DIR}/../plugins/iconengines/qsvgicon${QT_VERSION_MAJOR}.dll"        
+#          DESTINATION bin/iconengines
+#     )
 
 
     # Our path for customization of install procedure
