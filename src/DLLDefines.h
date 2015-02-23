@@ -10,7 +10,7 @@ building a DLL on windows.
 */
 // We are using the Visual Studio Compiler and building Shared libraries
 
-#if defined (_WIN32) 
+#if defined (_OWIN32) 
   #if defined(pleview_EXPORTS)
     #define  PLEVIEW_EXPORT __declspec(dllexport)
   #else

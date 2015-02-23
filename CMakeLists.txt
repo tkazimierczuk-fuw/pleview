@@ -2,7 +2,12 @@ PROJECT(pleview)
 
 CMAKE_MINIMUM_REQUIRED (VERSION 3.0)
 
-SET(CMAKE_CXX_FLAGS "-std=c++11")
+
+SET(CMAKE_BUILD_TYPE Release)
+
+IF(UNIX)
+  SET(CMAKE_CXX_FLAGS "-std=c++11")
+ENDIF(UNIX)
 
 SET(QT_USE_QTXML true)
 SET(QT_USE_QTSVG true)
@@ -18,12 +23,6 @@ add_definitions(${Qt5Widgets_DEFINITIONS})
 find_package(Boost REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
 
-
-#IF(WIN32)
-#SET(BOOST_ROOT "C:\\Program Files\\boost\\boost_1_42")
-#ENDIF(WIN32)
-#FIND_PACKAGE(Boost REQUIRED)
-#INCLUDE_DIRECTORIES( ${Boost_INCLUDE_DIRS} )
 
 
 INCLUDE_DIRECTORIES(
@@ -93,12 +92,12 @@ SET(Pleview_SRCS
 QT5_ADD_RESOURCES( RC_SRCS  ${pleview_SOURCE_DIR}/img/resources.qrc)
 
 
-ADD_EXECUTABLE(pleview  ${Pleview_SRCS} ${MOC_SRCS} ${RC_SRCS} ${pleview_SOURCE_DIR}/img/pleview.rc)
+ADD_EXECUTABLE(pleview WIN32 ${Pleview_SRCS} ${MOC_SRCS} ${RC_SRCS} ${pleview_SOURCE_DIR}/img/pleview.rc)
 TARGET_LINK_LIBRARIES(pleview Qt5::Widgets Qt5::Svg Qt5::PrintSupport Qt5::Concurrent qwt-tk muparser zlib)
 
 IF(WIN32)
-TARGET_LINK_LIBRARIES(pleview ${QT_QTMAIN_LIBRARY})
-SET_PROPERTY(TARGET pleview PROPERTY ENABLE_EXPORTS 1)
+# TARGET_LINK_LIBRARIES(pleview ${QT_QTMAIN_LIBRARY})
+# SET_PROPERTY(TARGET pleview PROPERTY ENABLE_EXPORTS 1)
 ENDIF(WIN32)
 
 #ADD_SUBDIRECTORY(src/plugins)
