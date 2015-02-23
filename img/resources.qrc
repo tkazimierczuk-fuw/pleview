@@ -45,6 +45,10 @@
         <file>actions/gear.svg</file>
         <file>actions/edit-paste.svg</file>
         <file>actions/file_import.svg</file>
+        <file>actions/zoom-fit-height.svg</file>
+        <file>actions/zoom-fit-height-auto.svg</file>
+        <file>actions/zoom-fit-width.svg</file>
+        <file>actions/zoom-fit-width-auto.svg</file>
     </qresource>
     <qresource prefix="/plugins">
         <file>plugins/zeemanplugin-e0.png</file>
