@@ -36,4 +36,3 @@ void TransposeFilter::unserializeFromXml(QXmlStreamReader *reader) {
 }
 
 
-Q_EXPORT_PLUGIN2(tranpose, TransposeFilterFactory)

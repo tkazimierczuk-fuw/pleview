@@ -99,4 +99,3 @@ QString SpectrumTransformer::name() {
     return QString("z:= ") + QString::fromStdString(_expression.GetExpr());
 }
 
-Q_EXPORT_PLUGIN2(transformer, SpectrumTransformerFactory)

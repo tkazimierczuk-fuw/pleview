@@ -232,4 +232,3 @@ QString RangeVariableFilter::name() {
     return QString("define ") + _varname;
 }
 
-Q_EXPORT_PLUGIN2(rangevariablefilter, RangeVariableFilterFactory)

@@ -62,10 +62,10 @@ public:
     double * addVariable(const QString &);
 
     //! Assign x value of a clicked point to current parameter
-    void button1clicked(const QwtDoublePoint &point);
+    void button1clicked(const QPointF &point);
 
     //! Assign y value of a clicked point to current parameter
-    void button2clicked(const QwtDoublePoint &point);
+    void button2clicked(const QPointF &point);
 
 private slots:
     //! Change the experimental data

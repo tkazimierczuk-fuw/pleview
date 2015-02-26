@@ -30,6 +30,22 @@ INCLUDE_DIRECTORIES(
     ${pleview_SOURCE_DIR}/qwt-tk/src-tk
     ${pleview_SOURCE_DIR}/muparser/include
     ${pleview_SOURCE_DIR}/zlib/
+    ${pleview_SOURCE_DIR}/src/plugins/
+${pleview_SOURCE_DIR}/src/plugins/zeemanplugin
+${pleview_SOURCE_DIR}/src/plugins/mapper
+${pleview_SOURCE_DIR}/src/plugins/xsectionfitter
+${pleview_SOURCE_DIR}/src/plugins/simulator
+${pleview_SOURCE_DIR}/src/plugins/comment
+${pleview_SOURCE_DIR}/src/plugins/spikeremove
+${pleview_SOURCE_DIR}/src/plugins/transformer
+${pleview_SOURCE_DIR}/src/plugins/transpose
+${pleview_SOURCE_DIR}/src/plugins/variabledef
+${pleview_SOURCE_DIR}/src/plugins/differentiate
+${pleview_SOURCE_DIR}/src/plugins/peakfinder
+${pleview_SOURCE_DIR}/src/plugins/compareother
+${pleview_SOURCE_DIR}/src/plugins/qdplugin
+${pleview_SOURCE_DIR}/src/plugins/pointpicker
+${pleview_SOURCE_DIR}/src/plugins/foldfilter
 )
 
 ADD_SUBDIRECTORY(qwt-tk)
@@ -61,7 +77,37 @@ SET(MOC_HDRS
   ${pleview_SOURCE_DIR}/src/variable.h
   ${pleview_SOURCE_DIR}/src/plotrangesmanager.h
 )
-QT5_WRAP_CPP(MOC_SRCS ${MOC_HDRS})
+
+SET(plugin_HDRS
+${pleview_SOURCE_DIR}/src/plugins/xsectionfitter/nonlinleastsq.h
+${pleview_SOURCE_DIR}/src/plugins/xsectionfitter/xsectionfitter.h
+${pleview_SOURCE_DIR}/src/plugins/xsectionfitter/lmmin.h
+${pleview_SOURCE_DIR}/src/plugins/xsectionfitter/variablewidget.h
+${pleview_SOURCE_DIR}/src/plugins/xsectionfitter/sectionedcurve.h
+${pleview_SOURCE_DIR}/src/plugins/xsectionfitter/signalmerger.h
+${pleview_SOURCE_DIR}/src/plugins/transpose/transposefilter.h
+${pleview_SOURCE_DIR}/src/plugins/simulator/simulatorplugin.h
+${pleview_SOURCE_DIR}/src/plugins/variabledef/rangevariablefilter.h
+${pleview_SOURCE_DIR}/src/plugins/comment/comment.h
+${pleview_SOURCE_DIR}/src/plugins/peakfinder/peakfinder.h
+${pleview_SOURCE_DIR}/src/plugins/plotcurveext.h
+${pleview_SOURCE_DIR}/src/plugins/qdplugin/qdplugin.h
+${pleview_SOURCE_DIR}/src/plugins/pointpicker/pointpicker.h
+${pleview_SOURCE_DIR}/src/plugins/mapper/mapperplugin.h
+${pleview_SOURCE_DIR}/src/plugins/curvegroup.h
+${pleview_SOURCE_DIR}/src/plugins/transformer/spectrumtransformer.h
+${pleview_SOURCE_DIR}/src/plugins/differentiate/differentiate.h
+${pleview_SOURCE_DIR}/src/plugins/differentiate/differentialmodel.h
+${pleview_SOURCE_DIR}/src/plugins/compareother/compareother.h
+${pleview_SOURCE_DIR}/src/plugins/compareother/doublemapitem.h
+${pleview_SOURCE_DIR}/src/plugins/spikeremove/spikeremove.h
+${pleview_SOURCE_DIR}/src/plugins/foldfilter/foldfilter.h
+${pleview_SOURCE_DIR}/src/plugins/parserxml.h
+${pleview_SOURCE_DIR}/src/plugins/zeemanplugin/linleastsq.h
+${pleview_SOURCE_DIR}/src/plugins/zeemanplugin/zeemanplugin.h
+)
+
+QT5_WRAP_CPP(MOC_SRCS ${MOC_HDRS} ${plugin_HDRS})
 
 SET(Pleview_SRCS
   ${pleview_SOURCE_DIR}/src/mainwindow.cpp
@@ -88,10 +134,41 @@ SET(Pleview_SRCS
   ${pleview_SOURCE_DIR}/src/plotrangesmanager.cpp
 )
 
+
+SET(plugin_SRCS
+${pleview_SOURCE_DIR}/src/plugins/xsectionfitter/lmmin.cpp
+${pleview_SOURCE_DIR}/src/plugins/xsectionfitter/sectionedcurve.cpp
+${pleview_SOURCE_DIR}/src/plugins/xsectionfitter/signalmerger.cpp
+${pleview_SOURCE_DIR}/src/plugins/xsectionfitter/variablewidget.cpp
+${pleview_SOURCE_DIR}/src/plugins/xsectionfitter/nonlinleastsq.cpp
+${pleview_SOURCE_DIR}/src/plugins/xsectionfitter/xsectionfitter.cpp
+${pleview_SOURCE_DIR}/src/plugins/transpose/transposefilter.cpp
+${pleview_SOURCE_DIR}/src/plugins/plotcurveext.cpp
+${pleview_SOURCE_DIR}/src/plugins/simulator/simulatorplugin.cpp
+${pleview_SOURCE_DIR}/src/plugins/curvegroup.cpp
+${pleview_SOURCE_DIR}/src/plugins/variabledef/rangevariablefilter.cpp
+${pleview_SOURCE_DIR}/src/plugins/comment/comment.cpp
+${pleview_SOURCE_DIR}/src/plugins/peakfinder/peakfinder.cpp
+${pleview_SOURCE_DIR}/src/plugins/qdplugin/qdplugin.cpp
+${pleview_SOURCE_DIR}/src/plugins/parserxml.cpp
+${pleview_SOURCE_DIR}/src/plugins/pointpicker/pointpicker.cpp
+${pleview_SOURCE_DIR}/src/plugins/mapper/mapperplugin.cpp
+${pleview_SOURCE_DIR}/src/plugins/transformer/spectrumtransformer.cpp
+${pleview_SOURCE_DIR}/src/plugins/differentiate/differentialmodel.cpp
+${pleview_SOURCE_DIR}/src/plugins/differentiate/differentiate.cpp
+${pleview_SOURCE_DIR}/src/plugins/compareother/doublemapitem.cpp
+${pleview_SOURCE_DIR}/src/plugins/compareother/compareother.cpp
+${pleview_SOURCE_DIR}/src/plugins/spikeremove/spikeremove.cpp
+${pleview_SOURCE_DIR}/src/plugins/foldfilter/foldfilter.cpp
+${pleview_SOURCE_DIR}/src/plugins/zeemanplugin/zeemanplugin.cpp
+${pleview_SOURCE_DIR}/src/plugins/zeemanplugin/linleastsq.cpp
+)
+
+
 QT5_ADD_RESOURCES( RC_SRCS  ${pleview_SOURCE_DIR}/img/resources.qrc)
 
 
-ADD_EXECUTABLE(pleview WIN32 ${Pleview_SRCS} ${MOC_SRCS} ${RC_SRCS} ${pleview_SOURCE_DIR}/img/pleview.rc)
+ADD_EXECUTABLE(pleview WIN32 ${Pleview_SRCS} ${MOC_SRCS} ${RC_SRCS} ${pleview_SOURCE_DIR}/img/pleview.rc ${plugin_SRCS})
 TARGET_LINK_LIBRARIES(pleview Qt5::Widgets Qt5::Svg Qt5::PrintSupport Qt5::Concurrent qwt-tk muparser zlib)
 
 

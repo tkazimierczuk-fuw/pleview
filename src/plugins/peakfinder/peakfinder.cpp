@@ -44,8 +44,8 @@ PeakFinder::PeakFinder()
     for(int i = 0; i < 2; i++) {      
         _peaks[i] = new QwtPlotCurve();
         _peaks[i]->setItemAttribute(QwtPlotItem::AutoScale, false);
-        _peaks[i]->setPen(Qt::NoPen);
-        _peaks[i]->setSymbol(QwtSymbol(QwtSymbol::Ellipse, QBrush(Qt::darkGreen), QPen(Qt::darkGreen),QSize(6,6)));
+        _peaks[i]->setPen(QPen(Qt::NoPen));
+        _peaks[i]->setSymbol(new QwtSymbol(QwtSymbol::Ellipse, QBrush(Qt::darkGreen), QPen(Qt::darkGreen),QSize(6,6)));
     }
 
     // connect signals to slots
@@ -181,7 +181,7 @@ void PeakFinder::markCurrent() {
     if(!_engine)
         return;
     QPolygonF poly = findPeaks(_engine->currentCrossSection().curve[_direction]);
-    _peaks[_direction]->setData(poly);
+    _peaks[_direction]->setSamples(poly);
     if(_peaks[_direction]->plot())
         _peaks[_direction]->plot()->replot();
     if(_frame) {
@@ -216,7 +216,7 @@ void PeakFinder::clearTestInfo() {
     if(_frame)
         _label->clear();
     for(int i = 0; i < 2; i++) {
-      _peaks[i]->setData(QPolygonF());
+      _peaks[i]->setSamples(QPolygonF());
       if(_peaks[i]->plot())
             _peaks[i]->plot()->replot();
     }
@@ -251,4 +251,3 @@ QString PeakFinderFactory::description() {
             "Peaks found in the test run are marked with green circles.";
 }
 
-Q_EXPORT_PLUGIN2(peakfinder, PeakFinderFactory)

@@ -11,9 +11,10 @@ public:
     }
 
 protected:
-    virtual void drawCurve(QPainter *p, int style,
+    virtual void drawCurve( QPainter *p, int style,
         const QwtScaleMap &xMap, const QwtScaleMap &yMap,
-        int from, int to) const;
+        const QRectF &canvasRect, int from, int to ) const;
+
 
 
 private:

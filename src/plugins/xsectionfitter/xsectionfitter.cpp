@@ -80,8 +80,8 @@ XSectionFitter::XSectionFitter()
         _curve_rest[i]->setPen(QPen(Qt::darkGray));
         _fitPoints[i] = new QwtPlotCurve();
         _fitPoints[i]->setItemAttribute(QwtPlotItem::AutoScale, false);
-        _fitPoints[i]->setPen(Qt::NoPen);
-        _fitPoints[i]->setSymbol(QwtSymbol(QwtSymbol::Ellipse, QBrush(Qt::darkGreen), QPen(Qt::darkGreen),QSize(3,3)));
+        _fitPoints[i]->setPen(QPen(Qt::NoPen));
+        _fitPoints[i]->setSymbol(new QwtSymbol(QwtSymbol::Ellipse, QBrush(Qt::darkGreen), QPen(Qt::darkGreen),QSize(3,3)));
     }
 
     // connect signals to slots
@@ -139,11 +139,11 @@ void XSectionFitter::recalculateCurve() {
             //for(int i = 0; i < poly.size(); i+=3)
             //  poly[i] = QPointF(qSNaN(), qSNaN());
 
-            _curve[_direction^1]->setData(QPolygonF());
-            _curve[_direction]->setData(poly);
+            _curve[_direction^1]->setSamples(QPolygonF());
+            _curve[_direction]->setSamples(poly);
 
-            _curve_rest[_direction^1]->setData(QPolygonF());
-            _curve_rest[_direction]->setData(poly);
+            _curve_rest[_direction^1]->setSamples(QPolygonF());
+            _curve_rest[_direction]->setSamples(poly);
         }
 
         // Now verify experimental data (to highlight points selected to fit).
@@ -179,8 +179,8 @@ void XSectionFitter::recalculateCurve() {
 
         _curve[_direction]->setRange(p_selected);
         _curve_rest[_direction]->setRange(p_nselected);
-        _fitPoints[_direction]->setData(curveData);
-        _fitPoints[_direction^1]->setData(QPolygonF());
+        _fitPoints[_direction]->setSamples(curveData);
+        _fitPoints[_direction^1]->setSamples(QPolygonF());
 
         for(int i = 0 ; i < 2; i++)
             if(_curve[i]->plot())
@@ -472,13 +472,13 @@ void XSectionFitter::setDirection(Pleview::Direction direction) {
 }
 
 
-void XSectionFitter::button1clicked(const QwtDoublePoint &point) {
+void XSectionFitter::button1clicked(const QPointF &point) {
     // validity of focusedParameter() will be check by the _varPool object
     _varPool.setCurrentValue(_varWidget->mouseActiveName, point.x());
 }
 
 
-void XSectionFitter::button2clicked(const QwtDoublePoint &point) {
+void XSectionFitter::button2clicked(const QPointF &point) {
     // validity of focusedParameter() will be check by the _varPool object
     _varPool.setCurrentValue(_varWidget->mouseActiveName, point.y());
 }
@@ -492,4 +492,3 @@ QString XSectionFitterFactory::description() {
 
 }
 
-Q_EXPORT_PLUGIN2(xsectionfitter, XSectionFitterFactory)
