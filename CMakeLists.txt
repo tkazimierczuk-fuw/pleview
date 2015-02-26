@@ -210,6 +210,9 @@ GET_TARGET_PROPERTY(QtPrintSupport_dll Qt5::PrintSupport LOCATION_Release)
 IF(WIN32)
      INSTALL(FILES
          ${QtCore_dll} ${QtGui_dll} ${QtWidgets_dll} ${QtSvg_dll} ${QtPrintSupport_dll}
+         ${_qt5Core_install_prefix}/bin/icudt53.dll
+         ${_qt5Core_install_prefix}/bin/icuin53.dll
+         ${_qt5Core_install_prefix}/bin/icuuc53.dll
          DESTINATION bin
      )
 #     INSTALL(FILES
