@@ -130,4 +130,3 @@ void Differentiate::unserializeComponent(QXmlStreamReader *reader) {
 }
 
 
-Q_EXPORT_PLUGIN2(differential, DifferentiateFactory)

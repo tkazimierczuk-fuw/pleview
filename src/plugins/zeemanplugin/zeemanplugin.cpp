@@ -198,7 +198,7 @@ void ZeemanPluginObject::reset() {
 }
 
 
-void ZeemanPluginObject::addPoint(int branch, const QwtDoublePoint &point) {
+void ZeemanPluginObject::addPoint(int branch, const QPointF &point) {
     QPolygonF points = _pointCurves.curveData(branch);
     points.append(point);
     _pointCurves.updateCurve(branch, points);
@@ -208,12 +208,12 @@ void ZeemanPluginObject::addPoint(int branch, const QwtDoublePoint &point) {
 }
 
 
-void ZeemanPluginObject::button1clicked(const QwtDoublePoint &point) {
+void ZeemanPluginObject::button1clicked(const QPointF &point) {
     addPoint(Upper, point);
 }
 
 
-void ZeemanPluginObject::button2clicked(const QwtDoublePoint &point) {
+void ZeemanPluginObject::button2clicked(const QPointF &point) {
     addPoint(Lower, point);
 }
 
@@ -258,6 +258,3 @@ void ZeemanPluginObject::unserializeFromXml(QXmlStreamReader *reader) {
     }
 }
 
-
-
-Q_EXPORT_PLUGIN2(zeemanplugin, ZeemanPlugin)

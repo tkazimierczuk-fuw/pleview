@@ -67,4 +67,3 @@ void SpikeRemove::unserializeFromXml(QXmlStreamReader *reader) {
 }
 
 
-Q_EXPORT_PLUGIN2(spikeremove, SpikeRemoveFactory)

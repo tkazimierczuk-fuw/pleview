@@ -44,6 +44,8 @@ private:
 class CommentFactory : public QObject, public PlotAddonFactory {
      Q_OBJECT
      Q_INTERFACES(PlotAddonFactory)
+     //Q_PLUGIN_METADATA(IID "pleview.PlotAddonFactory/0.1")
+                                            //PLOTADDONFACTORY_IID)
 public:
 
     //! Name of the plugin

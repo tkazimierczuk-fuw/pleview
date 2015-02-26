@@ -44,7 +44,7 @@ public:
     void unserializeComponent(QXmlStreamReader *reader);
 
     //! Add a point to the aproximating polyline
-    void button1clicked(const QwtDoublePoint &point);
+    void button1clicked(const QPointF &point);
 
 private:
     // Widgets for the interface

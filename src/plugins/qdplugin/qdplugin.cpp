@@ -53,7 +53,7 @@ QDPlugin::QDPlugin()
     polylineCurve = new QwtPlotCurve();
     polylineCurve->setItemAttribute(QwtPlotItem::AutoScale, false);
     polylineCurve->setPen(QPen(Qt::lightGray));
-    polylineCurve->setSymbol(QwtSymbol(QwtSymbol::Ellipse, QBrush(Qt::darkGray), QPen(Qt::darkGreen),QSize(5,5)));
+    polylineCurve->setSymbol(new QwtSymbol(QwtSymbol::Ellipse, QBrush(Qt::darkGray), QPen(Qt::darkGreen),QSize(5,5)));
 
     // connect signals to slots
     connect(fitButton, SIGNAL(clicked()), this, SLOT(fit()));
@@ -272,7 +272,7 @@ void QDPlugin::focusEvent(bool hasFocus) {
 }
 
 
-void QDPlugin::button1clicked(const QwtDoublePoint &point) {
+void QDPlugin::button1clicked(const QPointF &point) {
     polyline.insert(point.y(), point.x());
     QPolygonF poly;
 
@@ -282,7 +282,7 @@ void QDPlugin::button1clicked(const QwtDoublePoint &point) {
         poly.append(QPointF(it.value(), it.key()));
     }
 
-    polylineCurve->setData(poly);
+    polylineCurve->setSamples(poly);
     if(polylineCurve->plot())
         polylineCurve->plot()->replot();
 }
@@ -290,7 +290,7 @@ void QDPlugin::button1clicked(const QwtDoublePoint &point) {
 
 void QDPlugin::clearPolyline() {
     polyline.clear();
-    polylineCurve->setData(QPolygonF());
+    polylineCurve->setSamples(QPolygonF());
     if(polylineCurve->plot())
         polylineCurve->plot()->replot();
 }
@@ -306,4 +306,3 @@ QString QDPluginFactory::description() {
             "only adjusts the approximation within the small range.";
 }
 
-Q_EXPORT_PLUGIN2(qdplugin, QDPluginFactory)

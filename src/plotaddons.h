@@ -35,7 +35,8 @@ public:
     virtual PlotAddon * instantiate() = 0;
 };
 
-Q_DECLARE_INTERFACE(PlotAddonFactory, "pleview.PlotAddonFactory/0.1");
+#define PLOTADDONFACTORY_IID "pleview.PlotAddonFactory/0.1"
+Q_DECLARE_INTERFACE(PlotAddonFactory, PLOTADDONFACTORY_IID)
 
 
 class PLEVIEW_EXPORT PlotAddonManager : public QObject,

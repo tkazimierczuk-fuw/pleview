@@ -385,5 +385,3 @@ void MapperPluginObject::unserializeFromXml(QXmlStreamReader *reader) {
 }
 
 
-
-Q_EXPORT_PLUGIN2(mapperplugin, MapperPlugin)

@@ -9,10 +9,9 @@ SET( zeemanplugin_SRCS
     ../xsectionfitter/nonlinleastsq.cpp
     )
 
-QT4_WRAP_CPP(zeemanplugin_MOC_SRCS zeemanplugin.h)
 ADD_LIBRARY(zeemanplugin SHARED ${zeemanplugin_SRCS} ${zeemanplugin_MOC_SRCS})
 IF(WIN32)
-TARGET_LINK_LIBRARIES(zeemanplugin qwt-tk pleview muparser)
+  TARGET_LINK_LIBRARIES(zeemanplugin qwt-tk pleview muparser)
 ENDIF(WIN32)
 
 

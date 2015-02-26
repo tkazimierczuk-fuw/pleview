@@ -34,7 +34,7 @@ void PointPicker::unserializeComponent(QXmlStreamReader *reader) {
 }
 
 
-void PointPicker::button1clicked(const QwtDoublePoint &point) {
+void PointPicker::button1clicked(const QPointF &point) {
     pickedPoints->append(QString("%1\t%2").arg(point.x()).arg(point.y()));
 }
 
@@ -46,4 +46,3 @@ QString PointPickerFactory::description() {
             "Just [Ctrl]+click at the interesting point.";
 }
 
-Q_EXPORT_PLUGIN2(pointpicker, PointPickerFactory)

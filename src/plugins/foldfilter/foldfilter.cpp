@@ -74,5 +74,3 @@ void FoldFilter::unserializeFromXml(QXmlStreamReader *reader) {
     seekEndElement(reader);
 }
 
-
-Q_EXPORT_PLUGIN2(foldfilter, FoldFilterFactory)

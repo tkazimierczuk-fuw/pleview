@@ -4,6 +4,7 @@
 #include "qwt_painter.h"
 #include "qwt_symbol.h"
 #include "qwt_scale_map.h"
+#include "qwt_point_mapper.h"
 
 /*!
   \brief Draw symbols with variable sizes
@@ -23,22 +24,33 @@ void PlotCurveExt::drawSymbols(QPainter *painter, const QwtSymbol &symbol,
     painter->setBrush(symbol.brush());
     painter->setPen(Qt::NoPen);
 
-    const QwtMetricsMap &metricsMap = QwtPainter::metricsMap();
+    QwtPointMapper mapper;
+    mapper.setFlag( QwtPointMapper::RoundPoints, QwtPainter::roundingAlignment( painter ) );
+    mapper.setFlag( QwtPointMapper::WeedOutPoints, testPaintAttribute( QwtPlotCurve::FilterPoints ) );
+//    mapper.setBoundingRect( canvasRect );
 
-    QRect rect;
-    rect.setSize(metricsMap.screenToLayout(symbol.size()));
-    double ry = rect.height()/2;
-    double rx = rect.width()/2;
+    const int chunkSize = 500;
 
+    const double rx = symbol.size().width();
+    const double ry = symbol.size().height();
 
-    for (int i = from; i <= to; i++)
+    for ( int i = from; i <= to; i += chunkSize )
     {
-      const int xi = xMap.transform(x(i));
-      const int yi = yMap.transform(y(i));
-      double f = _intensities.value(i, 1.);
-      painter->drawEllipse(QPointF(xi, yi), f*rx, f*ry);
+        const int n = qMin( chunkSize, to - i + 1 );
+
+        const QPolygonF points = mapper.toPointsF( xMap, yMap,  data(), i, i + n - 1 );
+
+        int ip = i;
+        foreach(QPointF pt, points) {
+            double f = _intensities.value(ip, 1.);
+            painter->drawEllipse(pt, f*rx, f*ry);
+            ip++;
+        }
     }
 }
+
+
+
 
 void PlotCurveExt::setIntensities(const QVector<double> &intensities) {
     _intensities = intensities;

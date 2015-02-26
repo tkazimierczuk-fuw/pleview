@@ -169,7 +169,7 @@ void CompareOther::unserializeAttribute(const QXmlStreamAttribute &attribute) {
 
 
 void CompareOther::changePlot(int direction, const QVector<double> &xs, const QVector<double> &ys) {
-    _xsection[direction]->setData(xs, ys);
+    _xsection[direction]->setSamples(xs, ys);
     if(_xsection[direction]->plot())
         _xsection[direction]->plot()->replot();
 }
@@ -198,5 +198,3 @@ QString CompareOtherFactory::description() {
             "Optionally you can override the colormap to present two datasets combined, "
             "e.g., with brightness as total intensity and hue as the polarization.";
 }
-
-Q_EXPORT_PLUGIN2(compareother, CompareOtherFactory)

@@ -33,5 +33,3 @@ void Comment::unserializeFromXml(QXmlStreamReader *reader) {
 QString CommentFactory::description() {
     return "Attach a plain text comment to the file";
 }
-
-Q_EXPORT_PLUGIN2(comment, CommentFactory)

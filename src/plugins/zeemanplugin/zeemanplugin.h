@@ -2,6 +2,7 @@
 #define ZEEMANPLUGIN_H
 
 #include <QtGui>
+#include <QtWidgets>
 
 #include "qwt_plot_picker.h"
 #include "qwt_plot_curve.h"
@@ -38,14 +39,14 @@ public:
     //! @see Model::unserializeFromXml()
     void unserializeFromXml(QXmlStreamReader *reader);
 
-    void button1clicked(const QwtDoublePoint &point);
-    void button2clicked(const QwtDoublePoint &point);
+    void button1clicked(const QPointF &point);
+    void button2clicked(const QPointF &point);
 
 private:
     void prepareUi();
     void transposeIfNeeded(QPolygonF * poly);
     double calculate(double B, bool upperBranch);
-    void addPoint(int branch, const QwtDoublePoint &point);
+    void addPoint(int branch, const QPointF &point);
 
 private slots:
     void reset();
@@ -85,6 +86,7 @@ private:
 class ZeemanPlugin : public QObject, public PlotAddonFactory {
      Q_OBJECT
      Q_INTERFACES(PlotAddonFactory)
+     // Q_PLUGIN_METADATA(IID PLOTADDONFACTORY_IID)
 public:
 
     //! Name of the plugin

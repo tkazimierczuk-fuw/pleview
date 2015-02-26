@@ -55,7 +55,7 @@ public:
     void unserializeAttribute(const QXmlStreamAttribute &attribute);
 
     //! Add a point to the aproximating polyline
-    void button1clicked(const QwtDoublePoint &point);
+    void button1clicked(const QPointF &point);
 
 private slots:
     //! Reset the polyline by removing all defined points

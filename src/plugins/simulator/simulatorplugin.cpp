@@ -175,4 +175,3 @@ QString SimulatorPlugin::description() {
             ;
 }
 
-Q_EXPORT_PLUGIN2(simulatorplugin, SimulatorPlugin)

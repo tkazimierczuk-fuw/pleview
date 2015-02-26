@@ -9,7 +9,6 @@
 #include "xml.h"
 
 
-
 class Factory;
 
 
@@ -170,22 +169,48 @@ TFactory * FactoryObjectManager<T, TFactory>::findFactory(const QString &tagname
 }
 
 
+
+QList<QObject*> listOfPlugins();
+
+
 template <class T, class TFactory>
 QList<TFactory*> FactoryObjectManager<T, TFactory>::availableFactories() {
     QList<TFactory*> list;
+
+    /*
     QDir dir(QCoreApplication::applicationDirPath() + "/plugins");
     QFileInfoList fileList =  dir.entryInfoList(QDir::Files | QDir::Readable);
     foreach (QFileInfo fileInfo, fileList)  {
+        std::cerr << fileInfo.fileName().toStdString();
         QPluginLoader loader(fileInfo.absoluteFilePath());
         QObject *plugin = loader.instance();
+        std::cerr << "   " <<  plugin << " |  " << loader.errorString().toStdString() <<   "\n";
         if (plugin) {
             TFactory * mplugin = qobject_cast<TFactory*>(plugin);
-            if(mplugin)
+            if(mplugin) {
                 list.append(mplugin);
-            else
+                std::cerr << " OK\n";
+            }
+            else {
+                std::cerr << " FAILED\n";
                 delete plugin;
+            }
+        }
+    }*/
+
+    QList<QObject*> plugins = listOfPlugins();
+
+
+    foreach(QObject *plugin, plugins) {
+        TFactory * mplugin = qobject_cast<TFactory*>(plugin);
+        if(mplugin) {
+            list.append(mplugin);
+        }
+        else {
+            delete plugin;
         }
     }
+
     return list;
 }
 

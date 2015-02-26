@@ -32,7 +32,7 @@ void CurveGroup::updateCurve(int index, const QPolygonF &data,
                              const QVector<double> &intensities) {
     QwtPlotCurve * curve = _curves.value(index, 0);
     if(curve) {
-        curve->setData(data);
+        curve->setSamples(data);
         if(!intensities.isEmpty() && curve->rtti() == PlotCurveExt::Rtti_CurveExt) {
             PlotCurveExt * curveext = static_cast<PlotCurveExt*>(curve);
                             curveext->setIntensities(intensities);
@@ -70,11 +70,11 @@ void CurveGroup::addCurve(const QColor &color, const QPolygonF &data,
         PlotCurveExt * extcurve = new PlotCurveExt();
         extcurve->setIntensities(intensities);
         curve = extcurve;
-        QwtSymbol symbol(QwtSymbol::Ellipse, QBrush(color), Qt::NoPen, QSize(5,5));
-        curve->setPen(Qt::NoPen);
+        QwtSymbol * symbol = new QwtSymbol(QwtSymbol::Ellipse, QBrush(color), Qt::NoPen, QSize(5,5));
+        curve->setPen(QPen(Qt::NoPen));
         curve->setSymbol(symbol);
     }
-    curve->setData(data);
+    curve->setSamples(data);
     curve->setItemAttribute(QwtPlotItem::AutoScale, false);
     _curves.append(curve);
     if(_plot)
@@ -85,8 +85,8 @@ void CurveGroup::addCurve(const QColor &color, const QPolygonF &data,
 void CurveGroup::setCurveSymbol(int index, const QwtSymbol &symbol) {
     QwtPlotCurve * curve = _curves.value(index, 0);
     if(curve) {
-        curve->setSymbol(symbol);
-        curve->setPen(Qt::NoPen);
+        curve->setSymbol(new QwtSymbol(symbol.style(),symbol.brush(),symbol.pen(),symbol.size()));
+        curve->setPen(QPen(Qt::NoPen));
     }
 }
 
@@ -97,7 +97,7 @@ QPolygonF CurveGroup::curveData(int index) {
         return QPolygonF();
     QPolygonF result;
     for(int i = 0; i < curve->dataSize(); i++)
-        result.append(QPointF(curve->x(i), curve->y(i)));
+        result.append(QPointF(curve->sample(i).x(), curve->sample(i).y()));
     return result;
 }
 
@@ -129,8 +129,8 @@ void writeCurveXml(QXmlStreamWriter * writer, QwtPlotCurve * curve) {
 
     for(int i = 0; i < curve->dataSize(); i++) {
         writer->writeStartElement("point");
-        writeXmlAttribute(writer, "x", curve->y(i));
-        writeXmlAttribute(writer, "y", curve->y(i));
+        writeXmlAttribute(writer, "x", curve->sample(i).x());
+        writeXmlAttribute(writer, "y", curve->sample(i).y());
         if(curveext)
             writeXmlAttribute(writer, "z", curveext->intensity(i));
         writer->writeEndElement();
@@ -169,7 +169,7 @@ QwtPlotCurve * readCurveXml(QXmlStreamReader * reader) {
 
    if(curve) {
        curve->setItemAttribute(QwtPlotItem::AutoScale, false);
-       curve->setData(points);
+       curve->setSamples(points);
    }
 
    return curve;
