@@ -198,11 +198,12 @@ IF(UNIX AND NOT APPLE)
 ENDIF(UNIX AND NOT APPLE)
 
 
-GET_TARGET_PROPERTY(QtCore_dll         Qt5::Core         LOCATION_Release)
-GET_TARGET_PROPERTY(QtGui_dll          Qt5::Gui          LOCATION_Release)
-GET_TARGET_PROPERTY(QtWidgets_dll      Qt5::Widgets      LOCATION_Release)
-GET_TARGET_PROPERTY(QtSvg_dll          Qt5::Svg          LOCATION_Release)
-GET_TARGET_PROPERTY(QtPrintSupport_dll Qt5::PrintSupport LOCATION_Release)
+GET_TARGET_PROPERTY(QtCore_dll         Qt5::Core         LOCATION)
+GET_TARGET_PROPERTY(QtGui_dll          Qt5::Gui          LOCATION)
+GET_TARGET_PROPERTY(QtWidgets_dll      Qt5::Widgets      LOCATION)
+GET_TARGET_PROPERTY(QtSvg_dll          Qt5::Svg          LOCATION)
+GET_TARGET_PROPERTY(QtPrintSupport_dll Qt5::PrintSupport LOCATION)
+GET_TARGET_PROPERTY(QtWindows_plugin   Qt5::QWindowsIntegrationPlugin LOCATION)
 
 #probably qsvgicon engine
 
@@ -210,13 +211,18 @@ GET_TARGET_PROPERTY(QtPrintSupport_dll Qt5::PrintSupport LOCATION_Release)
 IF(WIN32)
      INSTALL(FILES
          ${QtCore_dll} ${QtGui_dll} ${QtWidgets_dll} ${QtSvg_dll} ${QtPrintSupport_dll}
+         ${_qt5Core_install_prefix}/bin/icudt53.dll
+         ${_qt5Core_install_prefix}/bin/icuin53.dll
+         ${_qt5Core_install_prefix}/bin/icuuc53.dll
          DESTINATION bin
      )
-#     INSTALL(FILES
-#         "${QT_LIBRARY_DIR}/../plugins/iconengines/qsvgicon${QT_VERSION_MAJOR}.dll"        
-#          DESTINATION bin/iconengines
-#     )
+     INSTALL(FILES
+          ${QtWindows_plugin}
+          DESTINATION bin/plugins
+     )
 
+
+#         "${QT_LIBRARY_DIR}/../plugins/iconengines/qsvgicon${QT_VERSION_MAJOR}.dll"        
 
     # Our path for customization of install procedure
     set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/install" ${CMAKE_MODULE_PATH})
