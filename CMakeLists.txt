@@ -176,7 +176,7 @@ TARGET_LINK_LIBRARIES(pleview Qt5::Widgets Qt5::Svg Qt5::PrintSupport Qt5::Concu
 
 
 INSTALL(TARGETS pleview
-        DESTINATION bin
+        DESTINATION .
     )
 
 
@@ -203,9 +203,7 @@ GET_TARGET_PROPERTY(QtGui_dll          Qt5::Gui          LOCATION)
 GET_TARGET_PROPERTY(QtWidgets_dll      Qt5::Widgets      LOCATION)
 GET_TARGET_PROPERTY(QtSvg_dll          Qt5::Svg          LOCATION)
 GET_TARGET_PROPERTY(QtPrintSupport_dll Qt5::PrintSupport LOCATION)
-GET_TARGET_PROPERTY(QtWindows_plugin   Qt5::QWindowsIntegrationPlugin LOCATION)
 
-#probably qsvgicon engine
 
  
 IF(WIN32)
@@ -214,15 +212,22 @@ IF(WIN32)
          ${_qt5Core_install_prefix}/bin/icudt53.dll
          ${_qt5Core_install_prefix}/bin/icuin53.dll
          ${_qt5Core_install_prefix}/bin/icuuc53.dll
-         DESTINATION bin
+         DESTINATION .
      )
+
+
+     GET_TARGET_PROPERTY(QtWindows_plugin   Qt5::QWindowsIntegrationPlugin LOCATION)
      INSTALL(FILES
           ${QtWindows_plugin}
-          DESTINATION bin/plugins
+          DESTINATION platforms
      )
 
+     GET_TARGET_PROPERTY(QSvgIcon_plugin   Qt5::QSvgIconPlugin LOCATION)
+     INSTALL(FILES
+          ${QSvgIcon_plugin}
+          DESTINATION iconengines
+     )
 
-#         "${QT_LIBRARY_DIR}/../plugins/iconengines/qsvgicon${QT_VERSION_MAJOR}.dll"        
 
     # Our path for customization of install procedure
     set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/install" ${CMAKE_MODULE_PATH})
@@ -236,7 +241,7 @@ IF(WIN32)
     
     # There is a bug in NSI that does not handle full unix paths properly. Make
     # sure there is at least one set of four (4) backlasshes.
-    SET(CPACK_NSIS_INSTALLED_ICON_NAME "bin\\\\pleview.exe")
+    SET(CPACK_NSIS_INSTALLED_ICON_NAME "pleview.exe")
     SET(CPACK_NSIS_DISPLAY_NAME "PLEview ${PLEVIEW_VERSION}")
     SET(CPACK_NSIS_HELP_LINK "http:\\\\\\\\www.fuw.edu.pl/~tkaz/pleview")
     SET(CPACK_NSIS_URL_INFO_ABOUT "http:\\\\\\\\www.fuw.edu.pl/~tkaz/pleview")
