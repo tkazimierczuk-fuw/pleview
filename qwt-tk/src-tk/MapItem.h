@@ -22,7 +22,7 @@ public:
 
 
   virtual QRectF boundingRect() const override;
-  Data2D * data();
+  GridData2D * data();
 
   ColorMap colorMap() { return d_colormap; }
 

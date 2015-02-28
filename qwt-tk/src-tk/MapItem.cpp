@@ -1,7 +1,5 @@
 #include <iostream>
 
-// #include "voro++.cc"
-
 #include "MapItem.h"
 #include "timecounter.h"
 
@@ -33,7 +31,7 @@ QRectF MapItem::boundingRect() const {
 }
 
 
-Data2D * MapItem::data() {
+GridData2D *MapItem::data() {
     return d_data;
 }
 

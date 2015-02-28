@@ -76,6 +76,7 @@ SET(MOC_HDRS
   ${pleview_SOURCE_DIR}/src/dataexport.h
   ${pleview_SOURCE_DIR}/src/variable.h
   ${pleview_SOURCE_DIR}/src/plotrangesmanager.h
+  ${pleview_SOURCE_DIR}/src/axistransformation.h
 )
 
 SET(plugin_HDRS
@@ -132,6 +133,7 @@ SET(Pleview_SRCS
   ${pleview_SOURCE_DIR}/src/pleview.cpp
   ${pleview_SOURCE_DIR}/src/variable.cpp
   ${pleview_SOURCE_DIR}/src/plotrangesmanager.cpp
+  ${pleview_SOURCE_DIR}/src/axistransformation.cpp
 )
 
 

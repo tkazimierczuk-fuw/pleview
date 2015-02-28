@@ -52,6 +52,7 @@ public:
 
 signals:
     void renderedImage(const QImage &image, const QRectF & area);
+    void renderedPixmap(const QPixmap &image, const QRectF & area);
 
 protected:
     void run();
@@ -92,6 +93,7 @@ public:
 
 private slots:
      void updatePixmap(const QImage &image, QRectF area);
+     void updatePixmap(const QPixmap &pixmap, QRectF area);
 
 
 protected:

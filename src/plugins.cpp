@@ -12,6 +12,7 @@
 #include "foldfilter.h"
 #include "differentiate.h"
 #include "compareother.h"
+#include "axistransformation.h"
 
 
 FactoryObject::~FactoryObject() {
@@ -45,5 +46,6 @@ QList<QObject*> listOfPlugins() {
     plugins.append(new DifferentiateFactory());
     plugins.append(new CompareOtherFactory());
     plugins.append(new QDPluginFactory());
+    plugins.append(new AxisTransformationFactory());
     return plugins;
 }

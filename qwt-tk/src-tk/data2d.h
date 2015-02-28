@@ -11,82 +11,29 @@
 #include <QTransform>
 #include <QWidget>
 #include <QtCore>
+#include <QPixmap>
 
 #include "qwt_global.h"
 #include "xml.h"
 #include "data.h"
-
-class QWT_EXPORT Data2D : public Data
-{
-public:
-    Data2D();
-    virtual ~Data2D();
-
-    virtual int size() const = 0;
-
-    class Iterator;
-
-    virtual double minX() const;
-    virtual double minY() const;
-    virtual double minZ() const;
-    virtual double maxX() const;
-    virtual double maxY() const;
-    virtual double maxZ() const;
-
-    virtual Iterator begin() const = 0;
-    virtual Iterator end() const = 0;
-
-    virtual Data2D * clone() const = 0;
-
-protected:
-    class IteratorData;
-    virtual void dataChanged();
-
-private:           
-    void invalidateCache();
-    void cacheBoundingCube() const;
-    mutable bool _boundingCacheValid;
-    mutable double _minX, _maxX, _minY, _maxY, _minZ, _maxZ; // boundingCache
-};
+#include "ColorMap.h"
 
 
 
-class Data2D::IteratorData {
-public:
-    virtual bool operator==(const IteratorData &other) const = 0;
-    virtual void next() = 0;
-    virtual double value() const = 0;
-    virtual QPolygonF cell() const = 0;
-    virtual QPointF position() const = 0;
-    virtual IteratorData * clone() const = 0;
-};
-
-class Data2D::Iterator {
-public:
-    Iterator(IteratorData * itdat) : _itdat(itdat) {}
-    ~Iterator() { delete _itdat; }
-    Iterator(const Iterator &other) {_itdat = other._itdat->clone(); }
-    void operator++() { _itdat->next();}
-    void operator++(int unused) { _itdat->next();}
-    bool operator==(const Iterator &other) const {return *_itdat == *(other._itdat);}
-    bool operator!=(const Iterator &other) const { return !(*this == other); }
-    double value() const {return _itdat->value(); }
-    QPointF position() const {return _itdat->position(); }
-    QPolygonF cell() const {return _itdat->cell(); }
-private:
-    IteratorData * _itdat;
-};
-
-
-
-class QWT_EXPORT GridData2D : public Data2D {
+class QWT_EXPORT GridData2D : public Data {
 public:
     GridData2D();
     GridData2D(QVector<double> &ys, QVector<double> &xs, QVector<double> &zs);
 
+    double minX() const { return _minX; }
+    double minY() const { return _minY; }
+    double minZ() const { return _minZ; }
+    double maxX() const { return _maxX; }
+    double maxY() const { return _maxY; }
+    double maxZ() const { return _maxZ; }
+
+
     int size() const;
-    virtual Data2D::Iterator begin() const;
-    virtual Data2D::Iterator end() const;
     inline int cols() const { return _x.size(); }
     inline int rows() const { return _y.size(); }
 
@@ -115,8 +62,6 @@ public:
 
     GridData2D & operator=(const GridData2D &other);
 
-    class IteratorData;
-
     /**
      * Pickle all properties to XML stream. Do not write EndElement.
      */
@@ -129,24 +74,22 @@ public:
      */
     virtual void unserializeFromXml(QXmlStreamReader * reader);
 
+
+    /**
+     * Prepare a graphics (map) of given area with given resolution and color scale.
+     */
+    QPixmap render(QRectF area, QSize resolution, ColorMap cmap) const;
+
 private:
+    //! Function checks if the _x and _y are sorted and if not then re-orders the data. Also caches values like minX and similar.
+    void dataChanged();
+
+    // actual data
     QVector<double> _x, _y, _values;
-};
 
-
-class GridData2D::IteratorData : public Data2D::IteratorData {
-public:
-    IteratorData(const GridData2D * data, int nx, int ny) : _data(data), _nx(nx), _ny(ny) {}
-    virtual bool operator==(const Data2D::IteratorData &other) const;
-    virtual void next() { if(++_nx == _data->cols()) {_nx = 0; _ny++;} }
-    virtual double value() const;
-    virtual QPolygonF cell() const;
-    virtual QPointF position() const;
-    virtual IteratorData * clone() const { return new IteratorData(_data, _nx, _ny); }
-
-private:
-    const GridData2D * _data;
-    int _nx, _ny;
+    // cached values calculated in dataChanged()
+    QVector<double> _cumulative; // _cumulative[x,y] is a sum of _values[i,j] where with i <= x and j <= y
+    mutable double _minX, _maxX, _minY, _maxY, _minZ, _maxZ; // cached value
 };
 
 

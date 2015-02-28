@@ -17,8 +17,8 @@ OfflineRenderItem::~OfflineRenderItem() {
 void OfflineRenderItem::initThread(RenderThread * thread) {
     this->thread = thread;
     thread->start(QThread::LowPriority);
-    connect(thread, SIGNAL(renderedImage(const QImage &, QRectF)),
-            this, SLOT(updatePixmap(const QImage &, QRectF)), Qt::QueuedConnection);
+    connect(thread, SIGNAL(renderedImage(const QImage &, QRectF)), this, SLOT(updatePixmap(const QImage &, QRectF)), Qt::QueuedConnection);
+    connect(thread, SIGNAL(renderedPixmap(QPixmap,QRectF)), this, SLOT(updatePixmap(QPixmap,QRectF)), Qt::QueuedConnection);
 }
 
 
@@ -116,6 +116,14 @@ void OfflineRenderItem::updatePixmap(const QImage &image, QRectF area) {
     if(plot() != 0)
         plot()->replot();
 }
+
+
+void OfflineRenderItem::updatePixmap(const QPixmap &pixmap, QRectF area) {
+    cache.insert(QPair<QRectF, QSize>(area, pixmap.size()), new QPixmap(pixmap));
+    if(plot() != 0)
+        plot()->replot();
+}
+
 
 
 RenderThread::RenderThread(QObject *parent)
