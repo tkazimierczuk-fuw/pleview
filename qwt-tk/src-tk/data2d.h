@@ -51,24 +51,6 @@ private:
 
 
 
-class QWT_EXPORT UnalignedData2D : public Data2D {
-public:
-    int size() const;
-    void append(const Point3D &point);
-    void append(double x, double y, double z);
-    void clear();
-
-    virtual Data2D::Iterator begin() const;
-    virtual Data2D::Iterator end() const;
-
-    UnalignedData2D * clone() const;
-    class IteratorData;
-
-private:
-    std::vector<Point3D> _data;
-};
-
-
 class Data2D::IteratorData {
 public:
     virtual bool operator==(const IteratorData &other) const = 0;
@@ -95,19 +77,6 @@ private:
     IteratorData * _itdat;
 };
 
-class UnalignedData2D::IteratorData : public Data2D::IteratorData {
-public:
-    IteratorData(const UnalignedData2D * data, int n) : _data(data), _n(n) {}
-    virtual bool operator==(const Data2D::IteratorData &other) const;
-    virtual void next() { _n++; }
-    virtual double value() const ;
-    virtual QPointF position() const;
-    virtual QPolygonF cell() const { return QPolygonF(); }
-    virtual IteratorData * clone() const { return new IteratorData(_data, _n); }
-private:
-    const UnalignedData2D * _data;
-    int _n;
-};
 
 
 class QWT_EXPORT GridData2D : public Data2D {

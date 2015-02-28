@@ -1,26 +1,6 @@
 #include "data.h"
 
 
-Transform3D::Transform3D() {
-    for(int i = 0; i < 3; i++) {
-        for(int j = 0; j < 3; j++)
-            _rotation[i][j] = 0;
-        _rotation[i][i] = 1;
-        _tr[i] = 0;
-    }
-}
-
-Point3D Transform3D::map(const Point3D &base) const {
-    double result[3], source[3];
-    result[0] = _tr[0];   result[1] = _tr[1];   result[2] = _tr[2];
-    source[0] = base.x(); source[1] = base.y(); source[2] = base.z();
-    for(int i = 0; i < 3; i++)
-        for(int j = 0; j < 3; j++)
-            result[i] +=_rotation[i][j] * source[j];
-    return Point3D(result[0], result[1], result[2]);
-}
-
-
 Data::~Data() {
 }
 

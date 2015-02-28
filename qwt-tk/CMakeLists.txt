@@ -111,7 +111,6 @@ ${QWTTK_SRC_DIR}/ColorMap.h
 ${QWTTK_SRC_DIR}/ColorMapSlider.h
 ${QWTTK_SRC_DIR}/data1d.h
 ${QWTTK_SRC_DIR}/data2d.h
-${QWTTK_SRC_DIR}/data3d.h
 ${QWTTK_SRC_DIR}/data.h
 ${QWTTK_SRC_DIR}/doublemarker.h
 ${QWTTK_SRC_DIR}/MapItem.h
@@ -212,7 +211,6 @@ ${QWTTK_SRC_DIR}/ColorMap.cpp
 ${QWTTK_SRC_DIR}/ColorMapSlider.cpp
 ${QWTTK_SRC_DIR}/data1d.cpp
 ${QWTTK_SRC_DIR}/data2d.cpp
-${QWTTK_SRC_DIR}/data3d.cpp
 ${QWTTK_SRC_DIR}/data.cpp
 ${QWTTK_SRC_DIR}/doublemarker.cpp
 ${QWTTK_SRC_DIR}/MapItem.cpp

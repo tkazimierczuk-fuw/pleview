@@ -18,19 +18,6 @@ Data2D::Data2D() {
 Data2D::~Data2D() {
 }
 
-void UnalignedData2D::append(const Point3D & point) {
-    _data.push_back(point);
-    dataChanged();
-}
-
-void UnalignedData2D::append(double x, double y, double z) {
-    append(Point3D(x, y, z));
-}
-
-void UnalignedData2D::clear() {
-    _data.clear();
-    dataChanged();
-}
 
 void Data2D::dataChanged() {
     invalidateCache();
@@ -93,17 +80,6 @@ double Data2D::maxZ() const {
 
 
 
-
-
-int UnalignedData2D::size() const {
-    return _data.size();
-}
-
-UnalignedData2D * UnalignedData2D::clone() const {
-    UnalignedData2D * ret = new UnalignedData2D();
-    ret->_data = _data; /* deep copy */
-    return ret;
-}
 
 
 GridData2D::GridData2D() {
@@ -181,25 +157,6 @@ QPolygonF GridData2D::IteratorData::cell() const {
     return ret;
 }
 
-
-Data2D::Iterator UnalignedData2D::begin() const {
-    return Iterator(new IteratorData(this, 0));
-}
-
-
-Data2D::Iterator UnalignedData2D::end() const {
-    return Iterator(new IteratorData(this, size()));
-}
-
-
-double UnalignedData2D::IteratorData::value() const {
-    return _data->_data[_n].z();
-}
-
-
-QPointF UnalignedData2D::IteratorData::position() const {
-    return QPointF(_data->_data[_n].x(), _data->_data[_n].y());
-}
 
 
 bool PleDataReader::readLine(QIODevice *device, double *x, double *y, double *z) {
@@ -295,10 +252,6 @@ QVector<double> GridData2D::yValues() const {
     return _y;
 }
 
-bool UnalignedData2D::IteratorData::operator==(const Data2D::IteratorData &other) const {
-    const UnalignedData2D::IteratorData * it = dynamic_cast<const UnalignedData2D::IteratorData*>(&other);
-    return it != 0 && _n == it->_n;
-}
 
 bool GridData2D::IteratorData::operator==(const Data2D::IteratorData &other) const {
     const GridData2D::IteratorData * it = dynamic_cast<const GridData2D::IteratorData*>(&other);

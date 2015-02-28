@@ -46,18 +46,6 @@ private:
 
 
 
-class Transform3D {
-public:
-    Transform3D();
-    Point3D map(const Point3D &base) const;
-//    void transpose(Dimension norm);
-
-private:
-    double _rotation[3][3];
-    double _tr[3];
-};
-
-
 
 class Data {
 public:
