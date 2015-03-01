@@ -48,6 +48,14 @@ public:
   double valueToFraction(double value) { return (value-d_min)/(d_max-d_min); }
   double fractionToValue(double fraction) { return d_min+(d_max-d_min)*fraction; }
 
+  bool operator==(const ColorMap &other) const {
+      return (d_stops == other.d_stops) && (d_min == other.d_min) && (d_max == other.d_max);
+  }
+
+  bool operator!=(const ColorMap &other) const {
+      return !( (*this) == other );
+  }
+
 private:
   QMap<double, QRgb> d_stops;
   double d_min, d_max;

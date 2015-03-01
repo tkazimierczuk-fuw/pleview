@@ -1,7 +1,7 @@
 #include "mainwindow.h"
 #include "configdialog.h"
 #include "MapItem.h"
-#include "ColorMapSlider.h"
+#include "colormapslider.h"
 #include "plotaddonsgui.h"
 #include "datafiltersgui.h"
 #include "dataimport.h"
@@ -21,6 +21,18 @@ MainWindow::MainWindow(Engine * model) : engine(model) {
     QDockWidget * dock = Pleview::log()->dockWidget();
     addDockWidget(Qt::BottomDockWidgetArea, dock);
     dock->hide();
+
+    QDockWidget * colordock = new ColorDock(model);
+    addDockWidget(Qt::BottomDockWidgetArea, colordock);
+    colordock->hide();
+    toolBar->addAction(colordock->toggleViewAction());
+
+
+    QDockWidget * xsectiondock = new XSectionDock(model);
+    addDockWidget(Qt::BottomDockWidgetArea, xsectiondock);
+    xsectiondock->hide();
+    toolBar->addAction(xsectiondock->toggleViewAction());
+
 
     for(int direction = 0; direction < 2; direction++) {
         connect(engine, SIGNAL(crossSectionChanged(int,QVector<double>,QVector<double>)),
@@ -101,6 +113,7 @@ void MainWindow::setupUi() {
     this->setStatusBar(statusbar);
 
     toolBar = new QToolBar(this);
+    toolBar->setWindowTitle("Main toolbar");
     toolBar->addAction(actionOpen);
     toolBar->addAction(actionSave);
     toolBar->addSeparator();

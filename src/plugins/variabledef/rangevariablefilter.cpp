@@ -121,7 +121,7 @@ void RangeVariableFilter::transform(GridData2D *data, VarDictionary * dict) {
     if(!_widget.isNull())
         updateFromGui();
 
-    if(_type == RangedAverage)
+    if(_defType == RangedAverage)
         transformAverage(data, dict);
     else
         transformPaste(data, dict);

@@ -7,7 +7,7 @@ class Engine;
 
 #include "DLLDefines.h"
 #include "data2d.h"
-#include "ColorMap.h"
+#include "colormap.h"
 #include "muParser.h"
 #include "plotaddons.h"
 #include "datafilters.h"

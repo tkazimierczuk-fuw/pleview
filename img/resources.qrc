@@ -49,6 +49,7 @@
         <file>actions/zoom-fit-height-auto.svg</file>
         <file>actions/zoom-fit-width.svg</file>
         <file>actions/zoom-fit-width-auto.svg</file>
+        <file>actions/configureXsection.svg</file>
     </qresource>
     <qresource prefix="/plugins">
         <file>plugins/zeemanplugin-e0.png</file>

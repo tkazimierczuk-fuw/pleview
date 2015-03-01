@@ -8,7 +8,7 @@
 #include "qwt_scale_map.h"
 #include "offlinerenderitem.h"
 #include "data2d.h"
-#include "ColorMap.h"
+#include "colormap.h"
 
 class MapItem : public OfflineRenderItem {
     Q_OBJECT

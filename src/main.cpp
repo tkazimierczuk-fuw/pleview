@@ -6,7 +6,7 @@
 #include "data2d.h"
 #include "MapItem.h"
 #include "offlinerenderitem.h"
-#include "ColorMapSlider.h"
+#include "colormapslider.h"
 #include "timecounter.h"
 #include "advancedplot.h"
 #include "mainwindow.h"

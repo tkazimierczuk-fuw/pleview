@@ -10,7 +10,7 @@
 #include <QLineEdit>
 
 #include "colorbutton.h"
-#include "ColorMap.h"
+#include "colormap.h"
 
 #include <iostream>
 
@@ -32,7 +32,7 @@ public:
         }
 
         stopWidth = 5;
-        setFocusPolicy(Qt::TabFocus);
+        setFocusPolicy(Qt::ClickFocus);
         mouseOffset = 0; /* initialization not necessary */
         selected = -1;
     }
@@ -53,6 +53,7 @@ protected:
     void mouseMoveEvent(QMouseEvent *e);
     void mouseReleaseEvent(QMouseEvent *e);
     void keyPressEvent(QKeyEvent *e);
+    void mouseDoubleClickEvent(QMouseEvent *event);
     virtual void paintEvent (QPaintEvent *e);
 
 private:
@@ -72,8 +73,10 @@ signals:
 class ColorMapConfig : public QWidget {
     Q_OBJECT
 public:
-    ColorMapConfig(QWidget *parent = 0, const ColorMap &initial = ColorMap());
+    ColorMapConfig(QWidget *parent = 0, const ColorMap &initial = ColorMap(), bool full = true);
     ColorMap currentColorMap() const;
+
+    QSize sizeHint() const { return minimumSizeHint(); }
 
 public slots:
     void setColorMap(const ColorMap & map);
@@ -105,6 +108,7 @@ private:
     ColorButton *buttonStop, *buttonMin, *buttonMax;
     QLineEdit *percentEdit, *valueEdit, *minEdit, *maxEdit;
     double _min, _max;
+    bool full;
 };
 
 #endif

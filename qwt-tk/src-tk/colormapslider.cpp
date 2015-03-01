@@ -6,11 +6,12 @@
 #include <QColor>
 #include <QGridLayout>
 #include <QFormLayout>
+#include <QColorDialog>
 
 #include <iostream>
 #include <limits>
 
-#include "ColorMapSlider.h"
+#include "colormapslider.h"
 
 double ColorMapSlider::mapMouse(const QPoint &pos) {
     double ret = (double) pos.x() / width();
@@ -26,18 +27,36 @@ double ColorMapSlider::mapValue(double value) {
 }
 
 
-/*! 
+/*!
    Mouse press event handler
    \param e Mouse event
 */
 void ColorMapSlider::mousePressEvent(QMouseEvent *e)
-{  
+{
     double pos = mapMouse(e->pos());
     selectStop(pos);
     if(selected < 0)
         addStop(pos, Qt::green);
     update();
 }
+
+void ColorMapSlider::mouseDoubleClickEvent(QMouseEvent *e) {
+    double pos = mapMouse(e->pos());
+    selectStop(pos);
+    double candidate = selected;
+    if(selected < 0)
+        candidate = pos;
+
+    if(candidate < 0 || candidate > 1)
+        return;
+    QColor color = map.value(candidate, Qt::green);
+
+    color = QColorDialog::getColor(color, this);
+    if(color.isValid())
+        map.insert(candidate, color);
+    update();
+}
+
 
 void ColorMapSlider::mouseMoveEvent(QMouseEvent *e)
 {
@@ -91,7 +110,7 @@ bool ColorMapSlider::selectStop(double val) {
         selected = -1;
     emit(mapChanged());
     update();
-	return true; // why return a value?
+    return true; // why return a value?
 }
 
 void ColorMapSlider::moveStop(double val) {
@@ -207,45 +226,53 @@ void ColorMapConfig::setupUi() {
     minEdit->setValidator(validator);
     gridLayout->addWidget(maxEdit, 1, 2, 1, 1);
 
-    group = new QGroupBox("Color stop");
-    gridLayout->addWidget(group, 2, 0, 1, 3);
-    QFormLayout *formLayout = new QFormLayout(group);
+    if(full) {
+        group = new QGroupBox("Color stop");
+        gridLayout->addWidget(group, 2, 0, 1, 3);
+        QFormLayout *formLayout = new QFormLayout(group);
 
-    buttonStop = new ColorButton();
-    buttonStop->setAutoDefault(false);
-    formLayout->addRow("&Color:", buttonStop);
-    valueEdit = new QLineEdit();
-    validator = new QDoubleValidator(_min, _max, 10, this);
-    valueEdit->setValidator(validator);
-    formLayout->addRow("&Value:", valueEdit);
+        buttonStop = new ColorButton();
+        buttonStop->setAutoDefault(false);
+        formLayout->addRow("&Color:", buttonStop);
+        valueEdit = new QLineEdit();
+        validator = new QDoubleValidator(_min, _max, 10, this);
+        valueEdit->setValidator(validator);
+        formLayout->addRow("&Value:", valueEdit);
 
-    percentEdit = new QLineEdit("0");
-    validator = new QDoubleValidator(0., 100., 10, this);
-    percentEdit->setValidator(validator);
-    formLayout->addRow("Percentage:", percentEdit);
+        percentEdit = new QLineEdit("0");
+        validator = new QDoubleValidator(0., 100., 10, this);
+        percentEdit->setValidator(validator);
+        formLayout->addRow("Percentage:", percentEdit);
 
-    removeButton = new QPushButton();
-    removeButton->setIcon(QIcon(":/icons/actions/editdelete.svg"));
-    removeButton->setToolTip("Remove current color stop");
-    connect(removeButton, SIGNAL(clicked()), this, SLOT(stopRemoved()));
-    formLayout->addRow(removeButton);
+        removeButton = new QPushButton();
+        removeButton->setIcon(QIcon(":/icons/actions/editdelete.svg"));
+        removeButton->setToolTip("Remove current color stop");
 
+        formLayout->addRow(removeButton);
+
+        connect(removeButton, SIGNAL(clicked()), this, SLOT(stopRemoved()));
+        connect(buttonStop, SIGNAL(valueChanged(QColor)), slider, SLOT(changeSelectedColor(QColor)));
+        connect(percentEdit, SIGNAL(editingFinished()), this, SLOT(percentEdited()));
+        connect(valueEdit, SIGNAL(editingFinished()), this, SLOT(valueEdited()));
+    }
     this->setLayout(gridLayout);
 }
 
 void ColorMapConfig::mapChanged() {
     ColorMap map = currentColorMap();
-    this->buttonMin->setColor(map.color(0));
-    this->buttonMax->setColor(map.color(1));
+    this->buttonMin->setColor(map.color(map.min()));
+    this->buttonMax->setColor(map.color(map.max()));
 
-    if(!qIsNaN(slider->selectedStop())) {
-        group->setEnabled(true);
-        buttonStop->setColor(slider->selectedColor());      
-        double percent = 100*slider->selectedStop();
-        percentEdit->setText(QString("%1").arg(percent));
-        valueEdit->setText(QString("%1").arg(percentToValue(percent)));
-    } else {
-        group->setEnabled(false);
+    if(full) {
+        if(!qIsNaN(slider->selectedStop())) {
+            group->setEnabled(true);
+            buttonStop->setColor(slider->selectedColor());
+            double percent = 100*slider->selectedStop();
+            percentEdit->setText(QString("%1").arg(percent));
+            valueEdit->setText(QString("%1").arg(percentToValue(percent)));
+        } else {
+            group->setEnabled(false);
+        }
     }
 
     map.setRange(_min, _max);
@@ -283,7 +310,7 @@ void ColorMapConfig::stopRemoved() {
 void ColorMapConfig::limitEdited() {
     _min = minEdit->text().toDouble();
     _max = maxEdit->text().toDouble();
-    if(group->isEnabled())
+    if(full && group->isEnabled())
         valueEdit->setText(QString::number(percentToValue(percentEdit->text().toDouble())));
     ColorMap map = slider->currentMap();
     map.setRange(_min, _max);
@@ -293,9 +320,10 @@ void ColorMapConfig::limitEdited() {
 
 
 
-ColorMapConfig::ColorMapConfig(QWidget * parent, const ColorMap &initial)
+ColorMapConfig::ColorMapConfig(QWidget * parent, const ColorMap &initial, bool full)
         : QWidget(parent)
 {
+    this->full = full;
     _min = initial.min(); _max = initial.max();
     oryginal = initial;
     slider = new ColorMapSlider(this, initial);
@@ -303,11 +331,8 @@ ColorMapConfig::ColorMapConfig(QWidget * parent, const ColorMap &initial)
     setupUi();
 
     connect(slider, SIGNAL(mapChanged()), this, SLOT(mapChanged()));
-    connect(buttonStop, SIGNAL(valueChanged(QColor)), slider, SLOT(changeSelectedColor(QColor)));
     connect(buttonMin, SIGNAL(valueChanged(QColor)), this, SLOT(setMinColor(QColor)));
     connect(buttonMax, SIGNAL(valueChanged(QColor)), this, SLOT(setMaxColor(QColor)));
-    connect(percentEdit, SIGNAL(editingFinished()), this, SLOT(percentEdited()));
-    connect(valueEdit, SIGNAL(editingFinished()), this, SLOT(valueEdited()));
     connect(minEdit, SIGNAL(editingFinished()), this, SLOT(limitEdited()));
     connect(maxEdit, SIGNAL(editingFinished()), this, SLOT(limitEdited()));
     this->mapChanged();
@@ -318,12 +343,20 @@ void ColorMapConfig::cancel() {
 }
 
 void ColorMapConfig::setColorMap(const ColorMap &map) {
-    oryginal = map;
-    /* TODO */
-    this->mapChanged();
+    if (oryginal != map) {
+        oryginal = map;
+        mapChanged();
+    }
 }
 
 ColorMap ColorMapConfig::currentColorMap() const {
     ColorMap map = slider->currentMap();
+    double vMin = minEdit->text().toDouble();
+    double vMax = maxEdit->text().toDouble();
+
+    if(map.max() > vMin) // we need to set limits carefully to avoid inverting the scale
+        map.setMin(vMin);
+    map.setMax(vMax);
+    map.setMin(vMin);
     return map;
 }

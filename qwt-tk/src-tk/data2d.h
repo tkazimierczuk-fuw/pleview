@@ -16,7 +16,7 @@
 #include "qwt_global.h"
 #include "xml.h"
 #include "data.h"
-#include "ColorMap.h"
+#include "colormap.h"
 
 
 

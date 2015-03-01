@@ -109,8 +109,8 @@ ${QWT_SRC_DIR}/qwt_transform.h
 ${QWT_SRC_DIR}/qwt_widget_overlay.h
 ${QWTTK_SRC_DIR}/advancedplot.h
 ${QWTTK_SRC_DIR}/colorbutton.h
-${QWTTK_SRC_DIR}/ColorMap.h
-${QWTTK_SRC_DIR}/ColorMapSlider.h
+${QWTTK_SRC_DIR}/colormap.h
+${QWTTK_SRC_DIR}/colormapslider.h
 ${QWTTK_SRC_DIR}/data1d.h
 ${QWTTK_SRC_DIR}/data2d.h
 ${QWTTK_SRC_DIR}/data.h
@@ -209,8 +209,8 @@ ${QWT_SRC_DIR}/qwt_transform.cpp
 ${QWT_SRC_DIR}/qwt_widget_overlay.cpp
 ${QWTTK_SRC_DIR}/advancedplot.cpp
 ${QWTTK_SRC_DIR}/colorbutton.cpp
-${QWTTK_SRC_DIR}/ColorMap.cpp
-${QWTTK_SRC_DIR}/ColorMapSlider.cpp
+${QWTTK_SRC_DIR}/colormap.cpp
+${QWTTK_SRC_DIR}/colormapslider.cpp
 ${QWTTK_SRC_DIR}/data1d.cpp
 ${QWTTK_SRC_DIR}/data2d.cpp
 ${QWTTK_SRC_DIR}/data.cpp

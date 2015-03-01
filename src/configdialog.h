@@ -3,7 +3,7 @@
 
 #include <QtGui>
 #include "model.h"
-#include "ColorMapSlider.h"
+#include "colormapslider.h"
 #include "parserwidget.h"
 #include "plotrangesmanager.h"
 
@@ -206,5 +206,37 @@ private:
     bool prevAutoscale[2];
 };
 
+
+class ColorDock : public QDockWidget {
+    Q_OBJECT
+public:
+    ColorDock(Engine * engine);
+
+private slots:
+    void execDialog();
+
+private:
+    ColorMapConfig * configWidget;
+};
+
+
+
+
+class XSectionDock : public QDockWidget {
+    Q_OBJECT
+public:
+    XSectionDock(Engine * engine);
+
+private slots:
+    void xXsectionChanged(int);
+    void yXsectionChanged(int);
+
+signals:
+    void xsectionChanged(int, int);
+
+private:
+    QSpinBox * widthEdit[2];
+
+};
 
 #endif // CONFIGDIALOG_H

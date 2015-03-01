@@ -1,7 +1,7 @@
 #include <iostream>
 
-#include "ColorMap.h"
-#include "ColorMapSlider.h"
+#include "colormap.h"
+#include "colormapslider.h"
 
 ColorMap::ColorMap(double min, double max, const QColor &firstStop, const QColor &lastStop) {
   d_min = min;
