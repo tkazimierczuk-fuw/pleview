@@ -58,64 +58,6 @@ MapItem::MapRenderThread::~MapRenderThread() {
 }
 
 
-bool MapItem::MapRenderThread::draw(QPainter * painter, QRectF area) {
-    painter->setRenderHint(QPainter::Antialiasing, false);
-    painter->setPen(Qt::NoPen);
-
-    if(d_data != 0 && d_data->cols() * d_data->rows() > 3e6) {
-        painter->setPen(Qt::red);
-        painter->fillRect(area, Qt::yellow);
-        painter->drawLine(area.topLeft(), area.bottomRight());
-        painter->drawLine(area.bottomLeft(), area.topRight());
-        return true;
-    }
-
-    if(!recache())
-        return false;
-
-    QVector<double> xs = d_data->xValues();
-    QVector<double> ys = d_data->yValues();
-
-    int cnt = 0;
-    for(int ix = 0; ix < xs.size(); ix++) {
-        for(int iy = 0; iy < ys.size(); iy++) {
-            double x1 = 0.5 * (xs.value(ix-1, xs[ix]) + xs[ix]);
-            double x2 = 0.5 * (xs.value(ix+1, xs[ix]) + xs[ix]);
-            double y1 = 0.5 * (ys.value(iy-1, ys[iy]) + ys[iy]);
-            double y2 = 0.5 * (ys.value(iy+1, ys[iy]) + ys[iy]);
-            painter->fillRect(QRectF(x1,y2, x2-x1, y1-y2), _cacheC.value(cnt++));
-      }
-      if(restart || abort)
-          return false;
-    }
-
-    return true;
-}
-
-
-bool MapItem::MapRenderThread::recache() {
-    QMutexLocker locker(&dataMutex);
-
-    if(d_data == 0)
-        return false;
-
-    if(colorsCached)
-        return true; // nothing to do
-
-    int counter = 0;
-    _cacheC.resize(d_data->size());
-
-    for(int ix = 0; ix < d_data->cols(); ix++) {
-        for(int iy = 0; iy < d_data->rows(); iy++) {
-            _cacheC[counter++] = d_colormap.color(d_data->valueAtIndex(ix, iy));
-      }
-
-     if(dataAbort)
-        return false;
-    }
-    colorsCached = true;
-    return true;
-}
 
 
 void MapItem::MapRenderThread::setColorMap(const ColorMap &colormap)
@@ -124,9 +66,8 @@ void MapItem::MapRenderThread::setColorMap(const ColorMap &colormap)
     dataMutex.lock();
     dataAbort = false;
     d_colormap = colormap;
-    colorsCached = false;
     dataMutex.unlock();
-    render();
+    offlineRender();
 }
 
 
@@ -138,7 +79,54 @@ void MapItem::MapRenderThread::setData(GridData2D * data)
     if(d_data != 0)
         delete d_data;
     d_data = data->clone();
-    colorsCached = false;
     dataMutex.unlock();
-    render();
+    offlineRender();
 }
+
+QPixmap MapItem::MapRenderThread::render(QRectF area, QSize resultSize) {
+    if(!d_data)
+        return QPixmap();
+    dataMutex.lock();
+    QPixmap pixmap = d_data->render(area, resultSize, d_colormap);
+    dataMutex.unlock();
+    return pixmap;
+}
+
+
+//void MapItem::MapRenderThread::run()
+//{
+//    mutex.lock();
+//    forever {
+//        if (!restart)
+//            condition.wait(&mutex);
+
+//        QImage image(resultSize, QImage::Format_ARGB32);
+//        image.fill(0); // do we need it?
+//        QRectF area = this->area;
+//        QPainter painter;
+//        painter.begin(&image);
+//        painter.scale(resultSize.width() / area.width(),
+//                      resultSize.height() / area.height());
+//        painter.translate(-area.topLeft());
+
+//        restart = false;
+//        abort = false;
+//        mutex.unlock();
+
+//        QPixmap pixmap;
+
+//        if(d_data != 0) {
+//            pixmap = d_data->render(area, resultSize, d_colormap);
+//        }
+
+//        if (halt)
+//            return;
+
+//        mutex.lock();
+//        if(!pixmap.isNull() && !abort) {
+//            emit renderedPixmap(pixmap, area);
+//        }
+//        // mutex stays locked when stepping to the next iteration
+//    }
+//}
+

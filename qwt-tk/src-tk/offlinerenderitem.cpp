@@ -4,7 +4,7 @@
 #include <iostream>
 
 OfflineRenderItem::OfflineRenderItem() {
-     qRegisterMetaType<QImage>("QImage");
+     qRegisterMetaType<QPixmap>("QPixmap");
      useOfflineRendering = true;
 }
 
@@ -17,15 +17,14 @@ OfflineRenderItem::~OfflineRenderItem() {
 void OfflineRenderItem::initThread(RenderThread * thread) {
     this->thread = thread;
     thread->start(QThread::LowPriority);
-    connect(thread, SIGNAL(renderedImage(const QImage &, QRectF)), this, SLOT(updatePixmap(const QImage &, QRectF)), Qt::QueuedConnection);
-    connect(thread, SIGNAL(renderedPixmap(QPixmap,QRectF)), this, SLOT(updatePixmap(QPixmap,QRectF)), Qt::QueuedConnection);
+    connect(thread, SIGNAL(renderedPixmap(QPixmap, QRectF)), this, SLOT(updatePixmap(QPixmap, QRectF)), Qt::QueuedConnection);
 }
 
 
 void OfflineRenderItem::draw(QPainter *painter, const QwtScaleMap &xMap,
-                             const QwtScaleMap &yMap, const QRectF &canvasRect) const {
-    if(!painter->isActive())
-        return; // is this check necessary?
+                             const QwtScaleMap &yMap, const QRectF &canvasRect) const {  
+    if(!painter->isActive() || !thread)
+        return;
 
     double l2 = xMap.invTransform(canvasRect.left());
     double t2 = yMap.invTransform(canvasRect.top());
@@ -39,20 +38,14 @@ void OfflineRenderItem::draw(QPainter *painter, const QwtScaleMap &xMap,
     int b3 = yMap.transform(nextArea.bottom());
     QSize nextSize(abs(r3-l3), abs(b3-t3));
 
+    QPixmap pixmap;
 
-    // however, if we want to do synchronized painting...
-    if(!useOfflineRendering && thread) {
-        painter->save();
-        painter->translate(canvasRect.topLeft());
-        painter->scale((canvasRect.right()-canvasRect.left()) / (r2-l2), (canvasRect.bottom()-canvasRect.top()) / (b2-t2));
-        painter->translate(-l2,-t2);
-        thread->draw(painter, nextArea);
-        painter->restore();
-        return;
+    if(!useOfflineRendering) {
+        pixmap = thread->render(nextArea, nextSize);
+    } else {
+        pixmap = chooseBestPixmap(&nextArea, nextSize);
     }
 
-
-    QPixmap pixmap = chooseBestPixmap(&nextArea, nextSize);
     if(pixmap.isNull())
         return;
 
@@ -60,6 +53,7 @@ void OfflineRenderItem::draw(QPainter *painter, const QwtScaleMap &xMap,
     double t = yMap.transform(nextArea.top());
     double r = xMap.transform(nextArea.right());
     double b = yMap.transform(nextArea.bottom());
+
     painter->translate(l, t);
     painter->scale(r-l, b-t); // scale(...) allows to invert the image (and drawPixmap(...) does not)
     painter->drawPixmap(0, 0, 1, 1, pixmap);
@@ -90,7 +84,7 @@ QPixmap OfflineRenderItem::chooseBestPixmap(QRectF * area, QSize size) const {
         return *pixmap;
     }
     else {
-        thread->render(*area, size);
+        thread->offlineRender(*area, size);
         QList<QPair<QRectF, QSize> > list = cache.keys();
         QList<QPair<QRectF, QSize> >::const_iterator it;
         QPair<QRectF, QSize> best_key;
@@ -146,7 +140,7 @@ RenderThread::~RenderThread()
     wait();
 }
 
-void RenderThread::render(QRectF area, QSize resultSize) {
+void RenderThread::offlineRender(QRectF area, QSize resultSize) {
 
 
     double l2 = area.left();
@@ -165,7 +159,7 @@ void RenderThread::render(QRectF area, QSize resultSize) {
 }
 
 
-void RenderThread::render() {
+void RenderThread::offlineRender() {
     mutex.lock();
     restart = true;
     condition.wakeOne();
@@ -173,9 +167,10 @@ void RenderThread::render() {
 }
 
 
-bool RenderThread::draw(QPainter * painter, QRectF area) {
-    painter->fillRect(area, Qt::green);
-    return true; // return successful exit
+QPixmap RenderThread::render(QRectF area, QSize resultSize) {
+    QPixmap pixmap(resultSize);
+    pixmap.fill();
+    return pixmap;
 }
 
 
@@ -187,28 +182,21 @@ void RenderThread::run()
         if (!restart)
             condition.wait(&mutex);
 
-        QImage image(resultSize, QImage::Format_ARGB32);
-        image.fill(0); // do we need it?
-        QRectF area = this->area;
-        QPainter painter;
-        painter.begin(&image);
-        painter.scale(resultSize.width() / area.width(),
-                      resultSize.height() / area.height());
-        painter.translate(-area.topLeft());
+        QRectF area = this->area; // store value while mutex is locked
+        QSize resultSize = this->resultSize; // store value while mutex is locked
+
         restart = false;
         abort = false;
         mutex.unlock();
 
-        bool success = draw(&painter, area);
-        if(painter.isActive())
-            painter.end();
+        QPixmap pixmap = render(area, resultSize);
 
         if (halt)
             return;
 
         mutex.lock();
-        if(success && !abort) {
-            emit renderedImage(image, area);
+        if(!pixmap.isNull() && !abort) {
+            emit renderedPixmap(pixmap, area);
         }
         // mutex stays locked when stepping to the next iteration
     }

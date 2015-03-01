@@ -77,7 +77,7 @@ XSectionDock::XSectionDock(Engine * engine) {
     connect(this, SIGNAL(xsectionChanged(int,int)), engine, SLOT(setCrossSectionWidth(int,int)));
 
     setWindowTitle("Cross-section");
-    toggleViewAction()->setIcon(QIcon(":/icons/action/configXsection.svg"));
+    toggleViewAction()->setIcon(QIcon(":/icons/actions/configureXsection.svg"));
     setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable | QDockWidget::DockWidgetVerticalTitleBar);
 }
 

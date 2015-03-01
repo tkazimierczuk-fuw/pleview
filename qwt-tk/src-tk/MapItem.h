@@ -30,7 +30,7 @@ public:
   enum { Rtti_MapItem = 502 };
 
   int rtti() const {
-      return Rtti_MapItem; // just random unique number
+      return Rtti_MapItem; // just a random unique number
   }
 
 
@@ -59,20 +59,17 @@ public:
     ~MapRenderThread();
     void setData(GridData2D * data);
 
+    QPixmap render(QRectF area, QSize resultSize) override;
+
 public slots:
     void setColorMap(const ColorMap &colormap);
 
 protected:
-    virtual bool draw(QPainter * painter, QRectF area);
-
   QMutex dataMutex;
   GridData2D * d_data;
   ColorMap d_colormap;
 
-  virtual bool recache();
   volatile bool dataAbort;
-  mutable bool colorsCached;
-  mutable QVector<QColor> _cacheC;
 };
 
 #endif

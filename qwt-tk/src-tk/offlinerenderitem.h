@@ -40,31 +40,33 @@ public:
       * emit renderedImage(QImage) signal. When subclassing, function should periodically
       * check values of restart and abort variables.
       */
-    void render(QRectF area, QSize resultSize);
+    void offlineRender(QRectF area, QSize resultSize);
 
     /**
       * Render again with previous area and size.
       */
-    void render();
+    void offlineRender();
 
     //! Stop rendering current image
     //void abort();
 
+    /**
+      * Actual rendering
+      */
+    virtual QPixmap render(QRectF area, QSize resultSize);
+
 signals:
-    void renderedImage(const QImage &image, const QRectF & area);
     void renderedPixmap(const QPixmap &image, const QRectF & area);
 
 protected:
     void run();
 
-public: // TODO: remove
-    virtual bool draw(QPainter * painter, QRectF area);
 
+protected:
     volatile bool restart, abort, halt; // reasonable assumption that setting bool value is atomic
 
     QMutex mutex;
 
-private:
     QWaitCondition condition;
     QRectF area;
     QSize resultSize;

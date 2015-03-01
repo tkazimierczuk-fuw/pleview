@@ -36,9 +36,8 @@ void DoubleMapItem::DoubleMapRenderThread::setSecondData(const GridData2D *data)
     if(d_data2 != 0)
         delete d_data2;
     d_data2 = data->clone();
-    colorsCached = false;
     dataMutex.unlock();
-    render();
+    offlineRender();
 }
 
 
@@ -52,37 +51,36 @@ void DoubleMapItem::DoubleMapRenderThread::setColor(int i, const QColor &color) 
     else
         _color2 = color.rgb();
 
-    colorsCached = false;
     dataMutex.unlock();
-    render();
+    offlineRender();
 }
 
 
 
-bool DoubleMapItem::DoubleMapRenderThread::recache() {
-    QMutexLocker locker(&dataMutex);
+//bool DoubleMapItem::DoubleMapRenderThread::recache() {
+//    QMutexLocker locker(&dataMutex);
 
-    if(d_data == 0 || d_data2 == 0)
-        return false;
+//    if(d_data == 0 || d_data2 == 0)
+//        return false;
 
-    if(colorsCached)
-        return true; // nothing to do
+//    if(colorsCached)
+//        return true; // nothing to do
 
-    int counter = 0;
-    _cacheC.resize(d_data->size());
+//    int counter = 0;
+//    _cacheC.resize(d_data->size());
 
-    for(int ix = 0; ix < d_data->cols(); ix++) {
-        for(int iy = 0; iy < d_data->rows(); iy++) {
-            int v = qGray(d_colormap.color(d_data->valueAtIndex(ix, iy)).rgb());
-            int w = qGray(d_colormap.color(d_data2->valueAtIndexBounded(ix, iy)).rgb());
-            _cacheC[counter++] = QColor::fromRgb((v*qRed(_color1) + w*qRed(_color2))/255,
-                                                 (v*qGreen(_color1) + w*qGreen(_color2))/255,
-                                                 (v*qBlue(_color1) + w*qBlue(_color2))/255);
-      }
+//    for(int ix = 0; ix < d_data->cols(); ix++) {
+//        for(int iy = 0; iy < d_data->rows(); iy++) {
+//            int v = qGray(d_colormap.color(d_data->valueAtIndex(ix, iy)).rgb());
+//            int w = qGray(d_colormap.color(d_data2->valueAtIndexBounded(ix, iy)).rgb());
+//            _cacheC[counter++] = QColor::fromRgb((v*qRed(_color1) + w*qRed(_color2))/255,
+//                                                 (v*qGreen(_color1) + w*qGreen(_color2))/255,
+//                                                 (v*qBlue(_color1) + w*qBlue(_color2))/255);
+//      }
 
-     if(dataAbort)
-        return false;
-    }
-    colorsCached = true;
-    return true;
-}
+//     if(dataAbort)
+//        return false;
+//    }
+//    colorsCached = true;
+//    return true;
+//}

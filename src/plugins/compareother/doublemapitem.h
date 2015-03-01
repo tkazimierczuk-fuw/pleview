@@ -38,7 +38,6 @@ public:
 protected:
     GridData2D * d_data2;
 
-    virtual bool recache();
     QRgb _color1, _color2;
 };
 

@@ -41,7 +41,7 @@ QVector<double> AxisConfiguration::values(const QVector<double> &fileValues) con
     try {
         for(int i = 0 ; i < fileValues.size(); i++) {
             *t = ((_type == FromFile) ? fileValues[i] : i);
-            if(_useTransform)
+            if(false && _useTransform) // ######### bypass ########
                 res.append(_transform.Eval());
             else
                 res.append(*t);

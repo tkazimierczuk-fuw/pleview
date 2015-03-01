@@ -393,7 +393,7 @@ double GridData2D::sumInIndexRange(int firstx, int lastx, int firsty, int lasty)
 
 
 QPixmap GridData2D::render(QRectF area, QSize resolution, ColorMap cmap) const {
-    if(_x.isEmpty() || _y.isEmpty())
+    if(_x.isEmpty() || _y.isEmpty() || resolution.isEmpty())
         return QPixmap();
 
     int width = resolution.width();
@@ -406,7 +406,6 @@ QPixmap GridData2D::render(QRectF area, QSize resolution, ColorMap cmap) const {
     // First we determine the mapping, i.e. which is corresponding data coordinate for each image pixel
     QVector<int> xmap = doMapping(width, _x, area.left(), area.right());
     QVector<int> ymap = doMapping(height, _y, area.top(), area.bottom());
-
 
     for(int i = 0; i < width; i++)
         for(int j = 0; j < height; j++) {
