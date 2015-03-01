@@ -16,26 +16,27 @@ class PLEVIEW_EXPORT Log : public QObject
 
 public:
     Log();
+    ~Log();
 
     void info(const QString &message);
     void warning(const QString &message);
     void error(const QString &message);
     QWidget * statusBarWidget();
+    QDockWidget * dockWidget();
 
 public slots:
     void show(QWidget * parent = 0);
-    void hide();
 
 signals:
     void newMessage(QString msg, QPixmap msgtype);
-
+    void newInfo(QString msg);
+    void newWarning(QString msg);
+    void newError(QString msg);
 
 
 private:
     static QString timeString();
-
-    QDialog * dialog;
-    QTextEdit * textWidget;
+    QDockWidget * _dockWidget;
 };
 
 

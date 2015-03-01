@@ -18,6 +18,10 @@ MainWindow::MainWindow(Engine * model) : engine(model) {
     createActions();
     setupUi();
 
+    QDockWidget * dock = Pleview::log()->dockWidget();
+    addDockWidget(Qt::BottomDockWidgetArea, dock);
+    dock->hide();
+
     for(int direction = 0; direction < 2; direction++) {
         connect(engine, SIGNAL(crossSectionChanged(int,QVector<double>,QVector<double>)),
                 crossPlot[direction], SLOT(updateCrossSection(int,QVector<double>,QVector<double>)));

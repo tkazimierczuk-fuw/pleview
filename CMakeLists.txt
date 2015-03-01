@@ -6,6 +6,9 @@ IF(UNIX)
 SET(CMAKE_CXX_FLAGS "-std=c++11")
 ENDIF(UNIX)
 
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+SET(CMAKE_AUTOMOC ON)
+
 SET(CMAKE_BUILD_TYPE Release)
 
 SET(QT_USE_QTXML true)
@@ -108,7 +111,6 @@ ${pleview_SOURCE_DIR}/src/plugins/zeemanplugin/linleastsq.h
 ${pleview_SOURCE_DIR}/src/plugins/zeemanplugin/zeemanplugin.h
 )
 
-QT5_WRAP_CPP(MOC_SRCS ${MOC_HDRS} ${plugin_HDRS})
 
 SET(Pleview_SRCS
   ${pleview_SOURCE_DIR}/src/mainwindow.cpp
@@ -169,8 +171,7 @@ ${pleview_SOURCE_DIR}/src/plugins/zeemanplugin/linleastsq.cpp
 
 QT5_ADD_RESOURCES( RC_SRCS  ${pleview_SOURCE_DIR}/img/resources.qrc)
 
-
-ADD_EXECUTABLE(pleview WIN32 ${Pleview_SRCS} ${MOC_SRCS} ${RC_SRCS} ${pleview_SOURCE_DIR}/img/pleview.rc ${plugin_SRCS})
+ADD_EXECUTABLE(pleview WIN32 ${Pleview_SRCS} ${RC_SRCS} ${pleview_SOURCE_DIR}/img/pleview.rc ${plugin_SRCS})
 TARGET_LINK_LIBRARIES(pleview Qt5::Widgets Qt5::Svg Qt5::PrintSupport Qt5::Concurrent qwt-tk muparser zlib)
 
 

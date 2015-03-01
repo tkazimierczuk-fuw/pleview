@@ -2,21 +2,77 @@
 #include "log.h"
 
 
+class LogWidget : public QListWidget
+{
+    Q_OBJECT
+public:
+    explicit LogWidget(QWidget *parent = 0);
+    ~LogWidget();
+
+    QSize sizeHint() const override { return minimumSizeHint(); }
+
+
+public slots:
+    void warning(QString msg);
+    void information(QString msg);
+    void error(QString msg);
+};
+
+
+LogWidget::LogWidget(QWidget *parent) : QListWidget(parent)
+{
+    setAlternatingRowColors(true);
+}
+
+LogWidget::~LogWidget()
+{
+}
+
+
+void LogWidget::warning(QString msg)
+{
+    QListWidgetItem * item = new QListWidgetItem(msg);
+    item->setForeground(QBrush(QColor(127, 127, 0)));
+    this->addItem(item);
+}
+
+void LogWidget::error(QString msg)
+{
+    QListWidgetItem * item = new QListWidgetItem(msg);
+    item->setForeground(QBrush(QColor(127, 0, 0)));
+    this->addItem(item);
+}
+
+
+void LogWidget::information(QString msg)
+{
+    this->addItem(msg);
+}
+
+
+
 
 
 
 Log::Log()
 {
-    dialog = new QDialog();
-    textWidget = new QTextEdit(dialog);
-    textWidget->setReadOnly(true);
-    QVBoxLayout * layout = new QVBoxLayout();
-    QPushButton * closeButton = new QPushButton("Close");
-    connect(closeButton, SIGNAL(clicked()), dialog, SLOT(hide()));
-    layout->addWidget(textWidget);
-    layout->addWidget(closeButton);
-    dialog->setLayout(layout);
-    dialog->setWindowTitle("Message log");
+
+    _dockWidget = new QDockWidget("Log");
+    _dockWidget->setAllowedAreas(Qt::AllDockWidgetAreas);
+    _dockWidget->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable | QDockWidget::DockWidgetVerticalTitleBar);
+
+    LogWidget * logwidget = new LogWidget();
+    _dockWidget->setWidget(logwidget);
+    //logwidget->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::MinimumQt::MinimumSize);
+
+    connect(this, SIGNAL(newInfo(QString)), logwidget, SLOT(information(QString)));
+    connect(this, SIGNAL(newWarning(QString)), logwidget, SLOT(warning(QString)));
+    connect(this, SIGNAL(newError(QString)), logwidget, SLOT(error(QString)));
+}
+
+
+Log::~Log() {
+
 }
 
 
@@ -28,13 +84,15 @@ QWidget * Log::statusBarWidget() {
 }
 
 
+QDockWidget * Log::dockWidget() {
+    return _dockWidget;
+}
+
+
 void Log::info(const QString &message) {
     std::cout << message.trimmed().toStdString() << "\n";
-    QString br;
-    if(!textWidget->toPlainText().isEmpty())
-        br = "<br/>";
-    textWidget->insertHtml(br + timeString() + " " + message);
     emit newMessage(message, QPixmap(":/pleview/misc/dialog-info.svg"));
+    emit newInfo(message);
 }
 
 QString Log::timeString() {
@@ -44,30 +102,20 @@ QString Log::timeString() {
 
 void Log::warning(const QString &message) {
     std::cout << "[warning] " <<  message.trimmed().toStdString() << "\n";
-    QString br;
-    if(!textWidget->toPlainText().isEmpty())
-        br = "<br/>";
-    textWidget->insertHtml(br+"<font color=\"#aaaa00\">" + timeString() + " " + message + "</font><br/>");
     emit newMessage(message, QPixmap(":/pleview/misc/dialog-warning.svg"));
+    emit newWarning(message);
 }
 
 
 void Log::error(const QString &message) {
-    warning(message);
+    std::cout << "[error] " <<  message.trimmed().toStdString() << "\n";
+    emit newMessage(message, QPixmap(":/pleview/misc/dialog-warning.svg"));
+    emit newError(message);
 }
 
 
 void Log::show(QWidget *parent) {
-    if(dialog) {
-        dialog->setParent(parent);
-        dialog->show();
-    }
-}
-
-
-void Log::hide() {
-    if(dialog)
-        dialog->hide();
+    _dockWidget->setVisible(!_dockWidget->isVisible());
 }
 
 
@@ -127,3 +175,5 @@ void  LogStatusWidget::mousePressEvent (QMouseEvent * event) {
     clearMessage();
     emit clicked();
 }
+
+#include "log.moc"
