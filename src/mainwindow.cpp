@@ -122,8 +122,6 @@ void MainWindow::setupUi() {
     toolBar->addAction(zoomAction);
     toolBar->addAction(moveAction);
     toolBar->addSeparator();
-    toolBar->addAction(plotConfigAction);
-    toolBar->addAction(colorMapAction);
     this->addToolBar(Qt::TopToolBarArea, toolBar);
 
     menubar->addAction(menuFile->menuAction());
@@ -156,7 +154,6 @@ void MainWindow::setupUi() {
 
     menuEdit->addAction(actionCopy);
     menuEdit->addSeparator();
-    menuEdit->addAction(plotConfigAction);
     menuEdit->addAction(actionAddPlugin);
     menuEdit->addAction(actionActivePlugins);
     menuEdit->addAction(actionDataFilters);
@@ -192,9 +189,6 @@ void MainWindow::createActions() {
     actionAbout = new QAction("&About", this);
     connect(actionAbout, SIGNAL(triggered()), this, SLOT(about()));
 
-    colorMapAction = new QAction(QIcon(":/icons/actions/colormap.png"), "Configure color scale", this);
-    connect(colorMapAction, SIGNAL(triggered()), this, SLOT(configColorMap()));
-
     QActionGroup * mouseGroup = new QActionGroup(this);
     mouseGroup->setExclusive(true);
 
@@ -210,9 +204,6 @@ void MainWindow::createActions() {
     mouseGroup->addAction(moveAction);
     QToolButton * moveButton = new QToolButton();
     moveButton->setDefaultAction(moveAction);
-
-    plotConfigAction = new QAction(QIcon(":/icons/actions/configure.svg"), "Configure", this);
-    connect(plotConfigAction, SIGNAL(triggered()), this, SLOT(config()));
 
     actionAddPlugin = new QAction(QIcon(":/icons/actions/plugin-add.png"), "Load a plugin", this);
     connect(actionAddPlugin, SIGNAL(triggered()), this, SLOT(addPlugin()));
@@ -358,18 +349,6 @@ void MainWindow::about() {
 }
 
 
-void MainWindow::configColorMap() {
-    ConfigDialog dialog(engine);
-    dialog.setPage(3); // set color page active
-    dialog.exec();
-}
-
-
-void MainWindow::config() {
-    ConfigDialog dialog(engine);
-    dialog.exec();
-}
-
 
 void MainWindow::enableActions() {
     bool hasData = (engine->isValid());
@@ -378,8 +357,6 @@ void MainWindow::enableActions() {
     actionSave->setEnabled(hasData);
     actionSaveAs->setEnabled(hasData);
     actionCopy->setEnabled(hasData && !isMapVisible);
-    plotConfigAction->setEnabled(hasData);
-    colorMapAction->setEnabled(hasData && isMapVisible);
     actionAddPlugin->setEnabled(hasData);
     actionActivePlugins->setEnabled(hasData);
 }

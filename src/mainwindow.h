@@ -58,12 +58,6 @@ private slots:
     /** Display dialog with available plugins */
     void addPlugin();
 
-    /** Display "Config" dialog and focus color options */
-    void configColorMap();
-
-    /** Display "Config dialog" */
-    void config();
-
     /** Set isEnabled flag for actions */
     void enableActions();
 
