@@ -364,6 +364,33 @@ QVector<int> doMapping(const int &width, const QVector<double> &xs, double left,
 }
 
 
+void coerce(int &v, int lbound, int ubound) {
+    if(v < lbound)
+        v = lbound;
+    if(v > ubound)
+        v = ubound;
+}
+
+double GridData2D::sumInIndexRange(int firstx, int lastx, int firsty, int lasty) {
+    if(_values.isEmpty())
+        return 0;
+
+    coerce(firstx, 0, _x.size()-1);
+    coerce(lastx, 0, _x.size()-1);
+    coerce(firsty, 0, _y.size()-1);
+    coerce(lasty, 0, _y.size()-1);
+
+    double result = _cumulative[lastx + lasty*_x.size()];
+    if(firstx > 0)
+        result -= _cumulative[firstx-1 + lasty*_x.size()];
+    if(firsty > 0)
+        result -= _cumulative[lastx + (firsty-1)*_x.size()];
+    if(firsty > 0 && firstx > 0)
+        result += _cumulative[firstx-1 + (firsty-1)*_x.size()];
+
+    return result;
+}
+
 
 QPixmap GridData2D::render(QRectF area, QSize resolution, ColorMap cmap) const {
     if(_x.isEmpty() || _y.isEmpty())

@@ -52,6 +52,10 @@ public:
         _values[ny * cols() + nx] = value;
     }
 
+
+    // Returns sum of values in a rectangular slice. Indexes should be valid
+    double sumInIndexRange(int firstx, int lastx, int firsty, int lasty);
+
     double valueAtIndexBounded(int nx, int ny) const;
 
     double valueAt(double x, double y);
@@ -80,7 +84,7 @@ public:
      */
     QPixmap render(QRectF area, QSize resolution, ColorMap cmap) const;
 
-private:
+private:   
     //! Function checks if the _x and _y are sorted and if not then re-orders the data. Also caches values like minX and similar.
     void dataChanged();
 

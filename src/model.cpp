@@ -350,6 +350,7 @@ QVector<QPointF> Engine::crossSection(int direction) const {
     if(data2d == 0 || ((direction == X) ? data2d->cols() : data2d->rows()) <= xsec.n[direction])
         return QVector<QPointF>();
 
+    QVector<double> xs = (direction == X) ? data2d->xValues() : data2d->yValues();
     QVector<double> ys = (direction == X) ? data2d->yValues() : data2d->xValues();
 
     for(int i = 0; i < ys.size(); i++) {
@@ -367,6 +368,25 @@ QVector<QPointF> Engine::crossSection(int direction) const {
             vec[i].setY(vec[i].y() + z);
         }
     }
+
+    int pos0 = xsec.n[direction] - n_pixels/2;
+    if(pos0 < 0)
+        pos0 = 0;
+    int pos1 = xsec.n[direction] - n_pixels/2 + n_pixels - 1;
+    if(pos1 >= xs.size())
+        pos1 = xs.size()-1;
+
+    if(pos1 < pos0)
+        return vec;
+
+    double factor = (double) n_pixels / (pos1 - pos0 + 1);
+
+    for(int i = 0; i < ys.size(); i++) {
+        if(direction == X)
+            vec[i].setY(data2d->sumInIndexRange(pos0, pos1, i, i) * factor);
+        else
+            vec[i].setY(data2d->sumInIndexRange(i, i, pos0, pos1) * factor);
+    }
     
     return vec;
 }
@@ -383,8 +403,6 @@ QPointF Engine::crossSectionPoint() const {
 int Engine::crossSectionWidth(int direction) const {
     if(xsec.pxwidth[direction] < 1)
         return 1;
-    else if(xsec.pxwidth[direction] > 201)
-        return 201;
     else
         return xsec.pxwidth[direction];
 }
