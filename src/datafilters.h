@@ -67,6 +67,7 @@ public slots:
 
 signals:
     void dataFiltersChanged();
+    void dataChanged(const GridData2D*);
 };
 
 

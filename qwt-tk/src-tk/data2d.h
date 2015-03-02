@@ -37,9 +37,9 @@ public:
     inline int cols() const { return _x.size(); }
     inline int rows() const { return _y.size(); }
 
-    void setXValues(const QVector<double> &values) { _x = values; }
+    void setXValues(const QVector<double> &values) { _x = values; dataChanged(); }
     QVector<double> xValues() const;
-    void setYValues(const QVector<double> &values) { _y = values; }
+    void setYValues(const QVector<double> &values) { _y = values; dataChanged(); }
     QVector<double> yValues() const;
     QVector<double> rawData() const { return _values; }
     inline double valueAtIndex(int nx, int ny) const {

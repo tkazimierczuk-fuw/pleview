@@ -42,6 +42,7 @@ void MapItem::setData(const GridData2D * data) {
     mapThread->setData(d_data);
     thread->render(boundingRect(), QSize(200, 200));
     clearCache(); // there is no race condition here as queued slots execute in the same thread
+    itemChanged();
 }
 
 

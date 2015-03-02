@@ -60,6 +60,7 @@ MainWindow::MainWindow(Engine * model) : engine(model) {
     connect(engine, SIGNAL(crossSectionChanged(int,double,double,double)), mapPlot, SLOT(setMarker(int,double,double,double)));
     connect(mapPlot, SIGNAL(markerMoved(int,double)), engine, SLOT(setCrossSection(int,double)));
     connect(engine, SIGNAL(dataChanged(const GridData2D *)), mapPlot, SLOT(setData(const GridData2D*)));
+    connect(engine->transformManager, SIGNAL(dataChanged(const GridData2D*)), mapPlot, SLOT(setData(const GridData2D*)));
     connect(engine, SIGNAL(colorMapChanged(ColorMap)), mapPlot, SLOT(setColor(ColorMap)));
     connect(engine->pluginManager, SIGNAL(addonAdded(PlotAddon*)), mapPlot, SLOT(attachPlugin(PlotAddon*)));
 

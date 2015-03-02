@@ -23,6 +23,8 @@ void DataFilterManager::transform(GridData2D *data) {
     foreach(DataFilter * filter, _objects) {
         filter->transform(data, &dict);
     }
+    if(!_objects.isEmpty())
+        emit dataChanged(data);
     QApplication::restoreOverrideCursor();
 }
 

@@ -65,7 +65,7 @@ void MapWithMarker::midClick(QPointF pos) {
 
 
 void MapWithMarker::setData(const GridData2D * data) {
-    mapItem->setData(data->clone());
+    mapItem->setData(data);
     this->replot();
 }
 
