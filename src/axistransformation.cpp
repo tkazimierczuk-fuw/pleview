@@ -6,13 +6,23 @@
 QString axisName[2] = {QString("x"), QString("y")};
 
 
-AxisTransformation::AxisTransformation(): DataFilter(new AxisTransformationFactory())
+AxisTransformation::AxisTransformation(QString xformula, QString yformula): DataFilter(new AxisTransformationFactory())
 {
     for(int i = 0; i < 2; i++) {
         parser[i].SetExpr(axisName[i].toStdString());
         parser[i].DefineVar(axisName[i].toStdString(), &dummy);
         parser[i].DefineVar("t", &dummy);
         transformEnabled[i] = false;
+    }
+
+    if(!xformula.isEmpty()) {
+        parser[0].SetExpr(xformula.toStdString());
+        transformEnabled[0] = true;
+    }
+
+    if(!yformula.isEmpty()) {
+        parser[1].SetExpr(yformula.toStdString());
+        transformEnabled[1] = true;
     }
 }
 

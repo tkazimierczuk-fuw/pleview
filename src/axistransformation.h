@@ -12,16 +12,19 @@ class AxisTransformation : public QObject, public DataFilter
 {
     Q_OBJECT
 public:
-    AxisTransformation();
+    //! Constructor. Empty formula is interpreted as no transformation.
+    AxisTransformation(QString xformula = QString(), QString yformula = QString());
+
     void transform(GridData2D *data, VarDictionary * dict);
     QWidget * createControlWidget();
 
     void serializeToXml(QXmlStreamWriter *writer, const QString &tagName) const;
     void unserializeFromXml(QXmlStreamReader *reader);
 
-private slots:
-    void enableTransformX(bool on) { transformEnabled[0] = on; }
-    void enableTransformY(bool on) { transformEnabled[1] = on; }
+
+public slots:
+    void enableTransformX(bool on) { transformEnabled[0] = on; enableTransformBox[0]->setChecked(on);}
+    void enableTransformY(bool on) { transformEnabled[1] = on; enableTransformBox[1]->setChecked(on);}
 
 private:
     bool transformEnabled[2];

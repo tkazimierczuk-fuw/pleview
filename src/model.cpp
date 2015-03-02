@@ -7,6 +7,8 @@
 #include "dataimport.h"
 #include "qtiocompressor.h"
 
+#include "axistransformation.h"
+
 
 CrossSection::CrossSection() {
     reset();
@@ -265,6 +267,15 @@ void Engine::readXml(QIODevice *device, Contents contents) {
         reader.readNext();
     }
 
+    // prior to v0.19 axis transformation was handled by AxisConfig widget;
+    // now this functionality is provided by a plugin
+    if(_axisConfig[X].isTransformEnabled() || _axisConfig[Y].isTransformEnabled()) {
+        QString xformula = _axisConfig[X].isTransformEnabled() ? _axisConfig[X].transform() : QString();
+        QString yformula = _axisConfig[Y].isTransformEnabled() ? _axisConfig[Y].transform() : QString();
+        transformManager->add(new AxisTransformation(xformula, yformula));
+    }
+
+
     if(reader.hasError())
         Pleview::log()->warning("XML parsing error encountered");
 
@@ -323,8 +334,8 @@ void Engine::save(QIODevice * device) {
     writer.writeStartElement("pleview");
     writeXmlAttribute(&writer, "format", 0.1);
 
-    _axisConfig[X].serializeToXml(&writer, "xAxis");
-    _axisConfig[Y].serializeToXml(&writer, "yAxis");
+    //_axisConfig[X].serializeToXml(&writer, "xAxis");
+    //_axisConfig[Y].serializeToXml(&writer, "yAxis");
 
     original->serializeToXml(&writer, "data");
     _colorMap.serializeToXml(&writer, "colormap");
