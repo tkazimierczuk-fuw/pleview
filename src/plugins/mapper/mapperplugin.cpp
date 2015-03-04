@@ -57,19 +57,12 @@ void SimpleColorImage::paintEvent(QPaintEvent *event) {
     QFrame::paintEvent(event);
 }
 
-
-// Warning: this function is related to the painting done in paintEvent
-bool SimpleColorImage::event(QEvent *event) {
-    if (event->type() != QEvent::ToolTip)
-        return QWidget::event(event);
-
-    QHelpEvent *helpEvent = static_cast<QHelpEvent *>(event);
-
+QPointF SimpleColorImage::posToCoordinates(QPoint pos) const {
     double width = (double) size().width() / _nx;
     double height = (double) size().height() / _ny;
 
-    double ix = helpEvent->pos().x() / width;
-    double iy = _ny - helpEvent->pos().y() / height;
+    double ix = pos.x() / width;
+    double iy = _ny - pos.y() / height;
     if(scaling.m11() < 0)
         ix = _nx - 1 - ix;
     if(scaling.m22() < 0)
@@ -77,7 +70,21 @@ bool SimpleColorImage::event(QEvent *event) {
 
     if (ix >= 0 && iy >= 0 && ix < _nx && iy < _ny) {
         scaling.map(ix-0.5, iy-0.5, &ix, &iy);
-        QToolTip::showText(helpEvent->globalPos(), QString("x=%1 , y=%2").arg(ix).arg(iy));
+        return QPointF(ix, iy);
+    }
+    else return QPointF();
+}
+
+
+bool SimpleColorImage::event(QEvent *event) {
+    if (event->type() != QEvent::ToolTip)
+        return QWidget::event(event);
+
+    QHelpEvent *helpEvent = static_cast<QHelpEvent *>(event);
+    QPointF coor = posToCoordinates(helpEvent->pos());
+
+    if(!coor.isNull()) {
+        QToolTip::showText(helpEvent->globalPos(), QString("x=%1 , y=%2").arg(coor.x()).arg(coor.y()));
     } else {
         QToolTip::hideText();
         event->ignore();
@@ -87,19 +94,31 @@ bool SimpleColorImage::event(QEvent *event) {
 }
 
 
+void SimpleColorImage::mouseReleaseEvent(QMouseEvent * event) {
+    QPointF coor = posToCoordinates(event->pos());
+    if(  !coor.isNull() && ((event->button() == Qt::MiddleButton) || (event->buttons() & Qt::MiddleButton))  )
+        emit tileClicked(qRound(coor.x()), qRound(coor.y()));
+}
+
+void SimpleColorImage::mouseMoveEvent(QMouseEvent *event) {
+    mouseReleaseEvent(event);
+}
+
+
 //! Present option to change the step size (for tool tip) or the color scale
 void SimpleColorImage::showContextMenu(const QPoint& pos) // this is a slot
 {
     QPoint globalPos = this->mapToGlobal(pos);
 
     QMenu myMenu;
-    QAction * setupStepAction  = myMenu.addAction("Setup step size");
+    //QAction * setupStepAction  = myMenu.addAction("Setup step size");
     QAction * setupColorAction = myMenu.addAction("Setup color map");
 
     QAction* selectedItem = myMenu.exec(globalPos);
-    if (selectedItem == setupStepAction)
-        setRaster();
-    else if (selectedItem == setupColorAction) {
+    //if (selectedItem == setupStepAction)
+    //    setRaster();
+    //else
+    if (selectedItem == setupColorAction) {
         setColorScale();
     }
 }
@@ -251,6 +270,7 @@ MapperPluginObject::MapperPluginObject() : PlotAddon(new MapperPlugin()) {
     image->setMinimumHeight(300);
     image->setTiles(10, 10);
     layout->addRow(image);
+    connect(image, SIGNAL(tileClicked(int,int)), this, SLOT(showSpectrum(int,int)));
 
     QPushButton * spawnButton = new QPushButton("Open in new Pleview window");
     layout->addRow(spawnButton);
@@ -287,6 +307,18 @@ void MapperPluginObject::spawnRequested() {
 }
 
 
+void MapperPluginObject::showSpectrum(int x, int y) {
+    int nx = xPointsSpinBox->value();
+
+    int direction = (directionCombo->currentIndex() == 0) ? (Engine::Y) : (Engine::X);
+    bool zigzag = (scanTypeBox->currentIndex() == 1);
+
+    int index = (zigzag && (y & 1)) ? (nx - x - 1 + nx * y) : (x + nx * y);
+
+    emit setCrossSection(direction, index);
+}
+
+
 MapperPluginObject::~MapperPluginObject() {
     if(_frame)
         delete _frame;
@@ -296,6 +328,7 @@ void MapperPluginObject::init(Engine *engine) {
     image->setColorMap(engine->colorMap());
     connect(engine, SIGNAL(crossSectionChanged(CrossSection)), this, SLOT(crossSectionChanged(CrossSection)));
     crossSectionChanged(engine->currentCrossSection());
+    connect(this, SIGNAL(setCrossSection(int,int)), engine, SLOT(setCrossSection(int,int)));
 }
 
 

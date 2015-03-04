@@ -24,6 +24,8 @@ AxisTransformation::AxisTransformation(QString xformula, QString yformula): Data
         parser[1].SetExpr(yformula.toStdString());
         transformEnabled[1] = true;
     }
+
+    enableTransformBox[0] = enableTransformBox[1] = 0;
 }
 
 
@@ -119,6 +121,9 @@ void AxisTransformation::unserializeFromXml(QXmlStreamReader *reader) {
 
         int axisno = (axisname == axisName[0]) ? 0 : 1;
         transformEnabled[axisno] = on;
+        if(enableTransformBox[axisno] != 0)
+            enableTransformBox[axisno]->setChecked(on);
+
         parser[axisno].SetExpr(formula.toStdString());
     }
 }

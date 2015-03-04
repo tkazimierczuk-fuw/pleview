@@ -69,12 +69,24 @@ public:
         return _max;
     }
 
+
 protected:
     //! @see QWidget::paintEvent(QPaintEvent*)
-    void paintEvent(QPaintEvent *);
+    void paintEvent(QPaintEvent *) override;
 
     //! Dynamic tool-tip
-    bool event(QEvent *event);
+    bool event(QEvent *event) override;
+
+    //! Emits a signal if a tile is clicked with middle button
+    void mouseReleaseEvent(QMouseEvent * event) override;
+    void mouseMoveEvent(QMouseEvent * event) override;
+
+
+    //! Translates mouse coordinate into tile coordinates
+    QPointF posToCoordinates(QPoint pos) const;
+
+
+
 
 public slots:
     //! Set cross-section data
@@ -85,6 +97,9 @@ public slots:
     //! Present an option to set step size
     void showContextMenu(const QPoint& pos);
 
+
+signals:
+    void tileClicked(int x, int y);
 
 private:
     int _nx, _ny;
@@ -137,6 +152,14 @@ private slots:
 
     //! Starts a new Pleview instance. Data is passed through temporary file
     void spawnRequested();
+
+
+    //! Requests showing a cross-section corresponding to a given tile
+    void showSpectrum(int x, int y);
+
+signals:
+    void setCrossSection(int direction, int pixel);
+
 
 private:
     QFrame *_frame;
