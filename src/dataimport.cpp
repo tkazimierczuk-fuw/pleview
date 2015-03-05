@@ -127,6 +127,8 @@ GridData2D * AsciiSerialImport::read(QIODevice * device, bool interactive, QWidg
 
     int pixels = 0; // 0 = autodetect repeated x value
 
+    interactive = false; // the dialog below is probably a bad idea
+
     if(interactive) {
 
         QDialog dialog(parent);
@@ -164,8 +166,7 @@ GridData2D * AsciiSerialImport::read(QIODevice * device, bool interactive, QWidg
             pixels = pixelBox->value();
     }
 
-    QProgressDialog progress("Opening file...", "Cancel",
-                                                   0, device->size(), parent);
+    QProgressDialog progress("Opening file...", "Cancel", 0, device->size(), parent);
     /* TODO: who deletes progress dialog? */
     progress.show();
     int pos0 = device->pos();
@@ -203,17 +204,24 @@ GridData2D * AsciiSerialImport::read(QIODevice * device, bool interactive, QWidg
     values.reserve(estimate);
 
     bool prev = false;
+    int counter = 0;
     // read all other spectra
     while(!device->atEnd()) {
         bool next = readAsciiLine(device, &x, &y, &value);
         if(((pixels == 0) && ((x==x0) || (!prev && next))) || (next && (pixels > 0) && (values.size()-1) % pixels == 0)) { // beginning of a new spectrum
             ys.append(y);
             y += 1;
-            progress.setValue(device->pos());
-            if(progress.wasCanceled()) {
-                progress.close();
-                return 0;
+            counter++;
+
+            if(counter % 20) {
+                progress.setValue(device->pos());
+                QApplication::processEvents();
+                if(progress.wasCanceled()) {
+                    progress.close();
+                    return 0;
+                }
             }
+
         }
 
         if(next)
@@ -222,9 +230,9 @@ GridData2D * AsciiSerialImport::read(QIODevice * device, bool interactive, QWidg
         prev = next;
     }
 
-    if(xs.size() * ys.size() > 1e7) // check for sanity
+    if(xs.size() * ys.size() > 1e9) // check for sanity
     {
-        Pleview::log()->error("Total number of pixels exceeds 10^7");
+        Pleview::log()->error("Total number of pixels exceeds 10^9");
         return 0; // error
     }
 
