@@ -166,7 +166,7 @@ GridData2D * AsciiSerialImport::read(QIODevice * device, bool interactive, QWidg
             pixels = pixelBox->value();
     }
 
-    QProgressDialog progress("Opening file...", "Cancel", 0, device->size(), parent);
+    QProgressDialog progress("Opening file...", "Cancel", 0, device->size(), QApplication::activeWindow());
     /* TODO: who deletes progress dialog? */
     progress.show();
     int pos0 = device->pos();
@@ -213,7 +213,7 @@ GridData2D * AsciiSerialImport::read(QIODevice * device, bool interactive, QWidg
             y += 1;
             counter++;
 
-            if(counter % 20) {
+            if(counter % 20 == 0) {
                 progress.setValue(device->pos());
                 QApplication::processEvents();
                 if(progress.wasCanceled()) {
@@ -230,15 +230,17 @@ GridData2D * AsciiSerialImport::read(QIODevice * device, bool interactive, QWidg
         prev = next;
     }
 
-    if(xs.size() * ys.size() > 1e9) // check for sanity
+    if(xs.size() * ys.size() > 1e8) // check for sanity
     {
-        Pleview::log()->error("Total number of pixels exceeds 10^9");
+        Pleview::log()->error("Total number of pixels exceeds 10^8");
         return 0; // error
     }
 
     // append missing values in case the last spectrum is not complete
-    while(values.size() < xs.size() * ys.size())
-        values.append(0);
+    if(values.size() < xs.size() * ys.size()) {
+        Pleview::log()->warning("Input data seem wrong. Incomplete last spectrum?");
+        values.resize(xs.size() * ys.size());
+    }
 
     return new GridData2D(ys, xs, values);
 }
