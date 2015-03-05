@@ -13,6 +13,7 @@
 #include "differentiate.h"
 #include "compareother.h"
 #include "axistransformation.h"
+#include "transposefilter.h"
 
 
 FactoryObject::~FactoryObject() {
@@ -47,5 +48,6 @@ QList<QObject*> listOfPlugins() {
     plugins.append(new CompareOtherFactory());
     plugins.append(new QDPluginFactory());
     plugins.append(new AxisTransformationFactory());
+    plugins.append(new TransposeFilterFactory());
     return plugins;
 }
