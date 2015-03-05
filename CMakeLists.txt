@@ -136,6 +136,7 @@ SET(Pleview_SRCS
   ${pleview_SOURCE_DIR}/src/variable.cpp
   ${pleview_SOURCE_DIR}/src/plotrangesmanager.cpp
   ${pleview_SOURCE_DIR}/src/axistransformation.cpp
+  ${pleview_SOURCE_DIR}/src/vectorwidget.cpp
 )
 
 

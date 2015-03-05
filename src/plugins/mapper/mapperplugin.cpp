@@ -3,6 +3,7 @@
 #include <iostream>
 #include <QtGui>
 #include "model.h"
+#include "vectorwidget.h"
 
 #ifndef NAN
 #define NAN (qInf() - qInf())
@@ -272,6 +273,10 @@ MapperPluginObject::MapperPluginObject() : PlotAddon(new MapperPlugin()) {
     layout->addRow(image);
     connect(image, SIGNAL(tileClicked(int,int)), this, SLOT(showSpectrum(int,int)));
 
+    VectorWidget * vw = new VectorWidget();
+    connect(vw, SIGNAL(valueChanged(QVector<double>)), this, SLOT(setVector(QVector<double>)));
+    layout->addRow(vw);
+
     QPushButton * spawnButton = new QPushButton("Open in new Pleview window");
     layout->addRow(spawnButton);
 
@@ -319,6 +324,12 @@ void MapperPluginObject::showSpectrum(int x, int y) {
 }
 
 
+void MapperPluginObject::setVector(QVector<double> v) {
+    customvector = v;
+    crossSectionChanged();
+}
+
+
 MapperPluginObject::~MapperPluginObject() {
     if(_frame)
         delete _frame;
@@ -348,6 +359,20 @@ void MapperPluginObject::crossSectionChanged() {
       for(int y = 0; y < ny; y++) {
         int index = (zigzag && (y & 1)) ? (nx - x - 1 + nx * y) : (x + nx * y);
         data[x + y * nx] = _crossSection.curve[direction].value(index, QPointF(0, qSNaN())).y();
+    }
+
+
+    if(!customvector.isEmpty()) {
+        if(!zigzag) {
+            data = customvector;
+        }
+        else {
+            for(int x = 0; x < nx; x++)
+                for(int y = 0; y < ny; y++) {
+                    int index = (y & 1) ? (nx - x - 1 + nx * y) : (x + nx * y);
+                    data[x + y * nx] = customvector.value(index, qSNaN());
+            }
+        }
     }
 
     image->setData(nx, ny, data);

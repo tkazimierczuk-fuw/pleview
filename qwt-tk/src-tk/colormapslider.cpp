@@ -298,6 +298,7 @@ void ColorMapConfig::percentEdited() {
 
 void ColorMapConfig::valueEdited() {
     double pos = valueEdit->text().toDouble();
+    pos = (pos - _min) / (_max - _min);
     slider->moveStop(pos);
 }
 

@@ -157,11 +157,16 @@ private slots:
     //! Requests showing a cross-section corresponding to a given tile
     void showSpectrum(int x, int y);
 
+    //! Sets a custom vector
+    void setVector(QVector<double> vec);
+
 signals:
     void setCrossSection(int direction, int pixel);
 
 
 private:
+    QVector<double> xsectionvector, customvector;
+
     QFrame *_frame;
     SimpleColorImage * image;
     CrossSection _crossSection;
