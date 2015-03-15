@@ -4,82 +4,63 @@
 #include <QtGui>
 #include "model.h"
 #include "vectorwidget.h"
+#include "vorowrapper.h"
 
 #ifndef NAN
 #define NAN (qInf() - qInf())
 #endif
 
 
-SimpleColorImage::SimpleColorImage() {
+SimpleVoronoiWidget::SimpleVoronoiWidget() {
+    plotter = new VoronoiPlotItem();
     setContextMenuPolicy(Qt::CustomContextMenu);
-    _max = _min = NAN;
+    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     connect(this, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(showContextMenu(const QPoint&)));
 }
 
-void SimpleColorImage::paintEvent(QPaintEvent *event) {
+
+SimpleVoronoiWidget::~SimpleVoronoiWidget() {
+    delete plotter;
+}
+
+
+void SimpleVoronoiWidget::setPoints(QVector<double> xs, QVector<double> ys) {
+    plotter->setPoints(xs, ys);
+    update();
+}
+
+
+void SimpleVoronoiWidget::setPoints(QPolygonF poly) {
+    plotter->setPoints(poly);
+    update();
+}
+
+
+
+void SimpleVoronoiWidget::paintEvent(QPaintEvent *event) {
     QPainter painter(this);
-    painter.setPen(QColor("#d4d4d4"));
 
-    // the same as in event
-    double width = (double) size().width() / _nx;
-    double height = (double) size().height() / _ny;
+    painter.setPen(QPen(Qt::gray, 0.));
+    QRectF target =plotter->boundingRect();
+    if(target.isEmpty())
+        return;
+    double s11 = width() / target.width();
+    double s22 = -height() / target.height();
+    scaling.setMatrix( s11, 0, 0, s22,  -target.left()*s11, height() - target.top()*s22);
+    painter.setMatrix(scaling);
 
-    double min = qInf(), max = -qInf();
-
-    foreach(double d, _data) {
-        if(d < min) min = d;
-        if(d > max) max = d;
-    }
-    if(qIsFinite(_min))
-        min = _min;
-    if(qIsFinite(_max))
-        max = _max;
-    _colormap.setRange(min, max);
-
-    if(scaling.m11() < 0) {
-        painter.translate(size().width(),0);
-        painter.scale(-1, 1);
-    }
-    if(scaling.m22() < 0) {
-        painter.translate(0, size().height());
-        painter.scale(1, -1);
-    }
-
-
-    for(int x = 0; x < _nx; x++)
-      for(int y = 0; y < _ny; y++) {
-        QRectF rect(width * x, height * (_ny-y-1), width, height);
-        if(x + y * _nx < _data.size() && !qIsNaN(_data[x + y * _nx]))
-            painter.fillRect(rect, _colormap.color(_data[x + y * _nx]));
-        else
-            painter.drawRect(rect);
-      }
-
-    QFrame::paintEvent(event);
-}
-
-QPointF SimpleColorImage::posToCoordinates(QPoint pos) const {
-    double width = (double) size().width() / _nx;
-    double height = (double) size().height() / _ny;
-
-    double ix = pos.x() / width;
-    double iy = _ny - pos.y() / height;
-    if(scaling.m11() < 0)
-        ix = _nx - 1 - ix;
-    if(scaling.m22() < 0)
-        iy = _ny - 1 - iy;
-
-    if (ix >= 0 && iy >= 0 && ix < _nx && iy < _ny) {
-        scaling.map(ix-0.5, iy-0.5, &ix, &iy);
-        return QPointF(ix, iy);
-    }
-    else return QPointF();
+    plotter->draw(&painter);
 }
 
 
-bool SimpleColorImage::event(QEvent *event) {
+QPointF SimpleVoronoiWidget::posToCoordinates(QPoint pos) const {
+    return scaling.inverted().map(QPointF(pos));
+}
+
+
+bool SimpleVoronoiWidget::event(QEvent *event) {
     if (event->type() != QEvent::ToolTip)
-        return QWidget::event(event);
+        return QFrame::event(event);
 
     QHelpEvent *helpEvent = static_cast<QHelpEvent *>(event);
     QPointF coor = posToCoordinates(helpEvent->pos());
@@ -95,79 +76,38 @@ bool SimpleColorImage::event(QEvent *event) {
 }
 
 
-void SimpleColorImage::mouseReleaseEvent(QMouseEvent * event) {
+void SimpleVoronoiWidget::mouseReleaseEvent(QMouseEvent * event) {
     QPointF coor = posToCoordinates(event->pos());
-    if(  !coor.isNull() && ((event->button() == Qt::MiddleButton) || (event->buttons() & Qt::MiddleButton))  )
-        emit tileClicked(qRound(coor.x()), qRound(coor.y()));
+
+    int closest = -1;
+    double dist = qInf();
+    QPolygonF points = plotter->points();
+    for(int i = 0; i < points.size(); i++) {
+        QPointF diff = points[i] - coor;
+        double dist2 = QPointF::dotProduct(diff, diff); //squared distance
+        if(dist2 < dist) {
+            dist = dist2;
+            closest = i;
+        }
+    }
+
+    if( (closest>=0) && !coor.isNull() && ((event->button() == Qt::MiddleButton) || (event->buttons() & Qt::MiddleButton))  )
+        emit tileClicked(closest);
 }
 
-void SimpleColorImage::mouseMoveEvent(QMouseEvent *event) {
+void SimpleVoronoiWidget::mouseMoveEvent(QMouseEvent *event) {
     mouseReleaseEvent(event);
 }
 
 
-//! Present option to change the step size (for tool tip) or the color scale
-void SimpleColorImage::showContextMenu(const QPoint& pos) // this is a slot
-{
-    QPoint globalPos = this->mapToGlobal(pos);
-
-    QMenu myMenu;
-    //QAction * setupStepAction  = myMenu.addAction("Setup step size");
-    QAction * setupColorAction = myMenu.addAction("Setup color map");
-
-    QAction* selectedItem = myMenu.exec(globalPos);
-    //if (selectedItem == setupStepAction)
-    //    setRaster();
-    //else
-    if (selectedItem == setupColorAction) {
-        setColorScale();
-    }
-}
-
-
-
-//! Display a dialog with step size options
-void SimpleColorImage::setRaster() {
-    QDialog * dialog = new QDialog(this);
-    dialog->setWindowTitle("Set step size");
-    QFormLayout * layout = new QFormLayout();
-
-    QLineEdit * initialXEdit = new QLineEdit();
-    initialXEdit->setValidator(new QDoubleValidator(initialXEdit));
-    initialXEdit->setText(QString::number(scaling.m31()));
-    QLineEdit * initialYEdit = new QLineEdit();
-    initialYEdit->setValidator(new QDoubleValidator(initialYEdit));
-    QLineEdit * stepXEdit = new QLineEdit();
-    initialYEdit->setText(QString::number(scaling.m32()));
-    stepXEdit->setValidator(new QDoubleValidator(stepXEdit));
-    stepXEdit->setText(QString::number(scaling.m11()));
-    QLineEdit * stepYEdit = new QLineEdit();
-    stepYEdit->setValidator(new QDoubleValidator(stepYEdit));
-    stepYEdit->setText(QString::number(scaling.m22()));
-
-    layout->addRow("X coordinate of the first point", initialXEdit);
-    layout->addRow("Y coordinate of the first point", initialYEdit);
-    layout->addRow("Spacing between two points (along x)", stepXEdit);
-    layout->addRow("Spacing between two rows (along y)", stepYEdit);
-
-    QDialogButtonBox * buttons = new QDialogButtonBox(QDialogButtonBox::Ok| QDialogButtonBox::Cancel);
-    layout->addRow(buttons);
-    connect(buttons, SIGNAL(accepted()), dialog, SLOT(accept()));
-    connect(buttons, SIGNAL(rejected()), dialog, SLOT(reject()));
-
-    dialog->setLayout(layout);
-    if(dialog->exec() == QDialog::Accepted) {
-        setRaster(initialXEdit->text().toDouble(), initialYEdit->text().toDouble(),
-                  stepXEdit->text().toDouble(), stepYEdit->text().toDouble() );
-    }
-}
-
 
 //! Set color scale (like manual minimum or maximum)
-void SimpleColorImage::setColorScale() {
+void SimpleVoronoiWidget::setColorScale() {
     QDialog * dialog = new QDialog(this);
     dialog->setWindowTitle("Setup color mapping");
     QFormLayout * layout = new QFormLayout();
+
+    /*ColorMap colormap = plotter->colorMap();
 
     QLineEdit * minimumEdit = new QLineEdit();
     minimumEdit->setValidator(new QDoubleValidator(minimumEdit));
@@ -202,7 +142,7 @@ void SimpleColorImage::setColorScale() {
     if(qIsFinite(_max))
         max = _max;
     else autoMaximumCheckbox->setChecked(true);
-    maximumEdit->setText(QString::number(max));
+    maximumEdit->setText(QString::number(max)); */
 
 
     QDialogButtonBox * buttons = new QDialogButtonBox(QDialogButtonBox::Ok| QDialogButtonBox::Cancel);
@@ -212,7 +152,7 @@ void SimpleColorImage::setColorScale() {
 
     dialog->setLayout(layout);
     if(dialog->exec() == QDialog::Accepted) {
-        if(autoMinimumCheckbox->isChecked())
+/*        if(autoMinimumCheckbox->isChecked())
             _min = NAN;
         else
             _min = minimumEdit->text().toDouble();
@@ -220,8 +160,12 @@ void SimpleColorImage::setColorScale() {
             _max = NAN;
         else
             _max = maximumEdit->text().toDouble();
-        update();
+        update(); */
     }
+}
+
+void SimpleVoronoiWidget::showContextMenu(const QPoint &pos) {
+
 }
 
 
@@ -236,61 +180,105 @@ QString MapperPlugin::description() {
 
 
 MapperPluginObject::MapperPluginObject() : PlotAddon(new MapperPlugin()) {
+
+    path = Z;
+    nx = 10;
+    direction = 0;
+    useCustom = false;
+
     _frame = new QFrame();
-    QFormLayout * layout = new QFormLayout();
+    QVBoxLayout * layout = new QVBoxLayout();
+
+
+    directionCombo = new QComboBox();
+    directionCombo->addItem("Positions instead of y values");
+    directionCombo->addItem("Positions instead of x values");
+    layout->addWidget(directionCombo);
+
+    QGroupBox * pathBox = new QGroupBox("Path");
+    layout->addWidget(pathBox);
+
+    QFormLayout * pathBoxLayout = new QFormLayout();
+
+    scanTypeBox = new QComboBox();
+    scanTypeBox->setIconSize(QSize(60,36));
+    scanTypeBox->addItem(QIcon(":/pleview/misc/grid-z.svg"), "z-path");
+    scanTypeBox->addItem(QIcon(":/pleview/misc/grid-u.svg"), "Zig-zag -path");
+    scanTypeBox->addItem("Custom positions");
+    scanTypeBox->setCurrentIndex((int) path);
+    pathBoxLayout->addRow("Scan type", scanTypeBox);
+
 
     QHBoxLayout * hlayout = new QHBoxLayout();
     xPointsSpinBox = new QSpinBox();
     xPointsSpinBox->setMinimum(1);
-    xPointsSpinBox->setValue(10);
+    xPointsSpinBox->setValue(nx);
     xPointsSpinBox->setMaximum(300);
     yPointsSpinBox = new QSpinBox();
     yPointsSpinBox->setMinimum(1);
     yPointsSpinBox->setValue(10);
     yPointsSpinBox->setMaximum(300);
+    yPointsSpinBox->setEnabled(false);
     hlayout->addWidget(xPointsSpinBox);
-    hlayout->addWidget(new QLabel("x"));
+    QLabel * xlabel = new QLabel("x");
+    hlayout->addWidget(xlabel);
     hlayout->addWidget(yPointsSpinBox);
+    pathBoxLayout->addRow("Tiles", hlayout);
+    pathBox->setLayout(pathBoxLayout);
 
-    layout->addRow("Map size", hlayout);
-
-    directionCombo = new QComboBox();
-    directionCombo->addItem("Vertical");
-    directionCombo->addItem("Horizontal");
-
-    layout->addRow("Cross-section", directionCombo);
-
-    scanTypeBox = new QComboBox();
-    scanTypeBox->setIconSize(QSize(60,36));
-    scanTypeBox->addItem(QIcon(":/pleview/misc/grid-z.svg"), "z-type");
-    scanTypeBox->addItem(QIcon(":/pleview/misc/grid-u.svg"), "Zig-zag -type");
-    layout->addRow("Scan type", scanTypeBox);
+    rectpathwidgets.append(xPointsSpinBox);
+    rectpathwidgets.append(yPointsSpinBox);
+    rectpathwidgets.append(xlabel);
+    rectpathwidgets.append(pathBoxLayout->labelForField(hlayout));
 
 
-    image = new SimpleColorImage();
-    image->setMinimumHeight(300);
-    image->setTiles(10, 10);
-    layout->addRow(image);
-    connect(image, SIGNAL(tileClicked(int,int)), this, SLOT(showSpectrum(int,int)));
+    hlayout = new QHBoxLayout();
+    xPointsWidget = new VectorWidget();
+    yPointsWidget = new VectorWidget();
+    hlayout->addWidget(xPointsWidget);
+    hlayout->addWidget(yPointsWidget);
+    pathBoxLayout->addRow(hlayout);
+    custompathwidgets.append(xPointsWidget);
+    custompathwidgets.append(yPointsWidget);
 
-    VectorWidget * vw = new VectorWidget();
-    connect(vw, SIGNAL(valueChanged(QVector<double>)), this, SLOT(setVector(QVector<double>)));
-    layout->addRow(vw);
 
-    QPushButton * spawnButton = new QPushButton("Open in new Pleview window");
-    layout->addRow(spawnButton);
+    QGroupBox * custombox = new QGroupBox("Plotted values");
+    custombox->setFlat(false);
+
+    QFormLayout * customboxlayout = new QFormLayout();
+
+    _useCustomWidget = new QCheckBox();
+    _useCustomWidget->setChecked(useCustom);
+    customboxlayout->addRow("Plot custom values", _useCustomWidget);
+
+    valuesWidget = new VectorWidget();
+    valuesWidget->setValues(_customvalues);
+    customboxlayout->addRow(valuesWidget);
+    custombox->setLayout(customboxlayout);
+    layout->addWidget(custombox);
+
+
+    voronoiWidget = new SimpleVoronoiWidget();
+    layout->addWidget(voronoiWidget);
+    voronoiWidget->setMinimumHeight(250);
+
+    connect(voronoiWidget, SIGNAL(tileClicked(int)), this, SLOT(showSpectrum(int)));
+    connect(xPointsSpinBox, SIGNAL(valueChanged(int)), this, SLOT(pathChanged()));
+    connect(directionCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(updateMap()));
+    connect(scanTypeBox, SIGNAL(currentIndexChanged(int)), this, SLOT(pathChanged()));
+    connect(xPointsWidget, SIGNAL(valueChanged(QVector<double>)), this, SLOT(pathChanged()));
+    connect(yPointsWidget, SIGNAL(valueChanged(QVector<double>)), this, SLOT(pathChanged()));
+    connect(_useCustomWidget, SIGNAL(toggled(bool)), this, SLOT(setCustom(bool)));
+    connect(valuesWidget, SIGNAL(valueChanged(QVector<double>)), this, SLOT(setVector(QVector<double>)));
 
     _frame->setLayout(layout);
 
-    connect(spawnButton, SIGNAL(clicked()), this, SLOT(spawnRequested()));
-    connect(xPointsSpinBox, SIGNAL(valueChanged(int)), this, SLOT(crossSectionChanged()));
-    connect(yPointsSpinBox, SIGNAL(valueChanged(int)), this, SLOT(crossSectionChanged()));
-    connect(directionCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(crossSectionChanged()));
-    connect(scanTypeBox, SIGNAL(currentIndexChanged(int)), this, SLOT(crossSectionChanged()));
+    pathChanged(); // toggles visibility of some widgets
+    setCustom(false); // toggles visibility of some widgets
 }
 
 
-void MapperPluginObject::spawnRequested() {
+/*void MapperPluginObject::spawnRequested() {
     int nx = image->resolution().width();
     int ny = image->resolution().height();
     QVector<double> data = image->data();
@@ -309,25 +297,51 @@ void MapperPluginObject::spawnRequested() {
     QStringList args;
     args.append(QFileInfo(file).absoluteFilePath());
     QProcess::startDetached(QApplication::applicationFilePath(), args);
-}
+} */
 
 
-void MapperPluginObject::showSpectrum(int x, int y) {
-    int nx = xPointsSpinBox->value();
-
-    int direction = (directionCombo->currentIndex() == 0) ? (Engine::Y) : (Engine::X);
-    bool zigzag = (scanTypeBox->currentIndex() == 1);
-
-    int index = (zigzag && (y & 1)) ? (nx - x - 1 + nx * y) : (x + nx * y);
-
-    emit setCrossSection(direction, index);
+void MapperPluginObject::showSpectrum(int n) {
+    direction = (directionCombo->currentIndex() == 0) ? (Engine::Y) : (Engine::X);
+    emit setCrossSection(direction, n);
 }
 
 
 void MapperPluginObject::setVector(QVector<double> v) {
-    customvector = v;
-    crossSectionChanged();
+    _customvalues = v;
+    updateMap();
 }
+
+
+void MapperPluginObject::pathChanged() {
+    nx = xPointsSpinBox->value();
+    path = (Path) scanTypeBox->currentIndex();
+
+    bool isCustom = (path == Custom);
+
+    foreach(QWidget * widget, rectpathwidgets)
+        widget->setVisible(!isCustom);
+    foreach(QWidget * widget, custompathwidgets)
+        widget->setVisible(isCustom);
+
+    if(path == Custom) {
+        voronoiWidget->setPoints(xPointsWidget->values(), yPointsWidget->values());
+    } else {
+        yPointsSpinBox->setValue(qCeil( (double) _values.size() / nx ));
+        QPolygonF poly;
+        poly.reserve(_values.size());
+        for(int ix = 0, iy = 0; iy * nx < _values.size(); ix++) {
+            poly.append(QPointF( path==Z ? ix : nx - ix, iy));
+            if(ix >= nx-1) {
+                iy++;
+                ix = -1;
+            }
+        }
+        voronoiWidget->setPoints(poly);
+    }
+
+    updateMap();
+}
+
 
 
 MapperPluginObject::~MapperPluginObject() {
@@ -336,7 +350,7 @@ MapperPluginObject::~MapperPluginObject() {
 }
 
 void MapperPluginObject::init(Engine *engine) {
-    image->setColorMap(engine->colorMap());
+    voronoiWidget->setColorMap(engine->colorMap());
     connect(engine, SIGNAL(crossSectionChanged(CrossSection)), this, SLOT(crossSectionChanged(CrossSection)));
     crossSectionChanged(engine->currentCrossSection());
     connect(this, SIGNAL(setCrossSection(int,int)), engine, SLOT(setCrossSection(int,int)));
@@ -345,38 +359,34 @@ void MapperPluginObject::init(Engine *engine) {
 
 void MapperPluginObject::crossSectionChanged(const CrossSection &cs) {
     _crossSection = cs;
-    crossSectionChanged();
+    updateMap();
 }
 
-void MapperPluginObject::crossSectionChanged() {
-    int nx = xPointsSpinBox->value();
-    int ny = yPointsSpinBox->value();
-    QVector<double> data(nx * ny);
-    int direction = (directionCombo->currentIndex() == 0) ? (Engine::X) : (Engine::Y);
-    bool zigzag = (scanTypeBox->currentIndex() == 1);
+void MapperPluginObject::updateMap() {
+    direction = (directionCombo->currentIndex() == 0) ? (Engine::X) : (Engine::Y);
 
-    for(int x = 0; x < nx; x++)
-      for(int y = 0; y < ny; y++) {
-        int index = (zigzag && (y & 1)) ? (nx - x - 1 + nx * y) : (x + nx * y);
-        data[x + y * nx] = _crossSection.curve[direction].value(index, QPointF(0, qSNaN())).y();
-    }
+    QVector<double> data(_crossSection.curve[direction].size());
+    for(int i = 0; i < data.size(); i++)
+        data[i] = _crossSection.curve[direction].value(i).y();
+    if(useCustom)
+        data = _customvalues;
 
+    int prevsize = _values.size();
+    _values = data;
 
-    if(!customvector.isEmpty()) {
-        if(!zigzag) {
-            data = customvector;
-        }
-        else {
-            for(int x = 0; x < nx; x++)
-                for(int y = 0; y < ny; y++) {
-                    int index = (y & 1) ? (nx - x - 1 + nx * y) : (x + nx * y);
-                    data[x + y * nx] = customvector.value(index, qSNaN());
-            }
-        }
-    }
+    if(data.size() != prevsize && path != Custom)
+        pathChanged();
 
-    image->setData(nx, ny, data);
+    voronoiWidget->setData(data);
 }
+
+
+void MapperPluginObject::setCustom(bool on) {
+    useCustom = on;
+    valuesWidget->setVisible(on);
+    updateMap();
+}
+
 
 
 void MapperPluginObject::attach(QwtPlot *plot, PlotType type) {
@@ -386,24 +396,26 @@ void MapperPluginObject::attach(QwtPlot *plot, PlotType type) {
 void MapperPluginObject::serializeToXml(QXmlStreamWriter *writer, const QString &tagName) const {
     writer->writeStartElement(tagName);
 
-    if(scanTypeBox->currentIndex() == 0)
+    writeXmlAttribute(writer, "xtiles", nx);
+
+    if(scanTypeBox->currentIndex() == (int) Z)
         writeXmlAttribute(writer, "scanType", "z");
-    else
+    else if(scanTypeBox->currentIndex() == (int) ZigZag)
         writeXmlAttribute(writer, "scanType", "zigzag");
-    writeXmlAttribute(writer, "xtiles", xPointsSpinBox->value());
-    writeXmlAttribute(writer, "ytiles", yPointsSpinBox->value());
-    writeXmlAttribute(writer, "colorScaleMinimum", image->colorScaleMinimum());
-    writeXmlAttribute(writer, "colorScaleMaximum", image->colorScaleMaximum());
-    writeXmlAttribute(writer, "step_x0", image->raster().m31());
-    writeXmlAttribute(writer, "step_y0", image->raster().m32());
-    writeXmlAttribute(writer, "step_dx", image->raster().m11());
-    writeXmlAttribute(writer, "step_dy", image->raster().m22());
+    else {
+        writeXmlAttribute(writer, "scanType", "custom");
+        writeXmlChild(writer, "xpoints", xPointsWidget->values());
+        writeXmlChild(writer, "ypoints", yPointsWidget->values());
+    }
 
     writer->writeStartElement("data");
     if(directionCombo->currentIndex() == 0)
         writeXmlAttribute(writer, "type", "vertical");
     else
         writeXmlAttribute(writer, "type", "horizontal");
+    writeXmlAttribute(writer, "usecustom", useCustom);
+    if(useCustom)
+        writeXmlChild(writer, "values", _customvalues);
     writer->writeEndElement();
 
     writer->writeEndElement();
@@ -413,33 +425,42 @@ void MapperPluginObject::serializeToXml(QXmlStreamWriter *writer, const QString 
 void MapperPluginObject::unserializeFromXml(QXmlStreamReader *reader) {
     QString scanType;
     readXmlAttribute(reader, "scanType", &scanType);
-    scanTypeBox->setCurrentIndex((scanType == "zigzag") ? 1 : 0);
+    if(scanType == "zigzag")
+        path = ZigZag;
+    else if(scanType == "z")
+        path = Z;
+    else
+        path = Custom;
+
     int tiles = 0;
     readXmlAttribute(reader, "xtiles", &tiles);
     if(tiles > 0)
-        xPointsSpinBox->setValue(tiles);
-    readXmlAttribute(reader, "ytiles", &tiles);
-    if(tiles > 0)
-        yPointsSpinBox->setValue(tiles);
+        nx = tiles;
 
-    double x0 = 0., y0 = 0., dx = 1., dy = 1.;
-    readXmlAttribute(reader, "step_x0", &x0);
-    readXmlAttribute(reader, "step_y0", &y0);
-    readXmlAttribute(reader, "step_dx", &dx);
-    readXmlAttribute(reader, "step_dy", &dy);
-    image->setRaster(x0, y0, dx, dy);
+    scanTypeBox->setCurrentIndex((int) path);
+    xPointsSpinBox->setValue(nx);
 
-    double _min = NAN, _max = NAN;
-    readXmlAttribute(reader, "colorScaleMinimum", &_min);
-    readXmlAttribute(reader, "colorScaleMaximum", &_max);
-    image->setColorScale(_min, _max);
+    //double _min = NAN, _max = NAN;
+    //readXmlAttribute(reader, "colorScaleMinimum", &_min);
+    //readXmlAttribute(reader, "colorScaleMaximum", &_max);
+    //image->setColorScale(_min, _max);
 
-    while(!seekChildElement(reader, "data").isEmpty()) {
-        QString direction;
-        readXmlAttribute(reader, "type", &direction);
-        directionCombo->setCurrentIndex((direction == "horizontal") ? 1 : 0);
-        seekEndElement(reader);
+    QString tagname;
+    while(! (tagname = seekChildElement(reader, "data", "xpoints", "ypoints")).isEmpty()) {
+        if(tagname == "data") {
+            QString direction;
+            readXmlAttribute(reader, "type", &direction);
+            directionCombo->setCurrentIndex((direction == "horizontal") ? 1 : 0);
+            seekEndElement(reader);
+        } else if(tagname == "xpoints") {
+            QVector<double> v;
+            readXmlChild(reader, &v);
+            xPointsWidget->setValues(v);
+        } else if(tagname == "ypoints") {
+            QVector<double> v;
+            readXmlChild(reader, &v);
+            yPointsWidget->setValues(v);
+        }
     }
 }
-
 

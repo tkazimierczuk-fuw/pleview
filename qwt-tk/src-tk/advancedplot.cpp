@@ -85,12 +85,19 @@ AdvancedPlot::AdvancedPlot()
     replot_requested = false;
     connect(this, SIGNAL(internalWakeup()), this, SLOT(wakeUp()), Qt::QueuedConnection);
 
+    //zoomer = new QwtPlotZoomer(this);
+    //zoomer->setEnabled(false);
+
     axisWidget(QwtPlot::xBottom)->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(axisWidget(QwtPlot::xBottom), SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(displayHAxisCustomContextMenu(QPoint)));
     axisWidget(QwtPlot::yLeft)->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(axisWidget(QwtPlot::yLeft), SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(displayVAxisCustomContextMenu(QPoint)));
 }
 
+
+void AdvancedPlot::setZoomerActive(bool active) {
+    //zoomer->setEnabled(active);
+}
 
 
 void AdvancedPlot::setAxisName(Qt::Orientation orientation, const QString &name) {

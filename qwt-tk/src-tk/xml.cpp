@@ -1,4 +1,5 @@
 #include "xml.h"
+#include <QTextStream>
 
 
 /**
@@ -146,6 +147,37 @@ bool readXmlAttribute(QXmlStreamReader * reader, const QString &name, double * d
     else return false;
 }
 
+
+
+
+void writeXmlChild(QXmlStreamWriter * writer, const QString & name, const QVector<double> &value) {
+    writer->writeStartElement(name);
+    writeXmlAttribute(writer, "size", value.size());
+    for(int i = 0; i < value.size(); i++)
+        writer->writeCharacters(QString::number(value[i]) + '\n');
+    writer->writeEndElement();
+}
+
+
+
+void readXmlChild(QXmlStreamReader * reader, QVector<double> * target) {
+    QString text = reader->readElementText();
+    QTextStream stream(&text);
+
+    QString token;
+    double value;
+    bool ok;
+    QVector<double> ret;
+    stream.skipWhiteSpace();
+    while(!stream.atEnd() && stream.status() == QTextStream::Ok) {
+        stream >> token;
+        value = token.toDouble(&ok);
+        if(ok)
+            ret.append(value);
+        stream.skipWhiteSpace();
+    }
+    *target = ret;
+}
 
 
 

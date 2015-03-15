@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QStack>
 #include <QPair>
+#include "qwt_plot.h"
 #include "qwt_scale_div.h"
 
 /**
@@ -22,6 +23,8 @@ public:
     enum PlotAxis {X=1, Y=2, Zx=4, Zy=8};
     bool isAutoScaled(PlotAxis axis) const;
     QPair<double, double> currentRange(PlotAxis axis) const;
+
+    void registerPlot(QwtPlot * plot, PlotAxis xLabel, PlotAxis yLabel);
 
 public slots:
     void setXYRanges(const QRectF & rect);

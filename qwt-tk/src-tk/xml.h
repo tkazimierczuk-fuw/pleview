@@ -24,6 +24,9 @@ bool readXmlAttribute(QXmlStreamReader * reader, const QString &name, double * t
 bool readXmlAttribute(const QXmlStreamAttribute &attr, bool * target);
 
 
+void writeXmlChild(QXmlStreamWriter * writer, const QString & name, const QVector<double> &value);
+void readXmlChild(QXmlStreamReader * reader, QVector<double> * target);
+
 
 
 

@@ -1,4 +1,5 @@
 #include "transposefilter.h"
+#include "data2d.h"
 
 
 TransposeFilter::TransposeFilter()
@@ -8,15 +9,14 @@ TransposeFilter::TransposeFilter()
 
 
 void TransposeFilter::transform(GridData2D *data, VarDictionary * dict) {
-    GridData2D * backup = data->clone();
-    data->setXValues(backup->yValues());
-    data->setYValues(backup->xValues());
+    QVector<double> newValues;
+    newValues.reserve(data->rows() * data->cols());
 
-    for(int ix = 0; ix < data->cols(); ix++)
-        for(int iy = 0; iy < data->rows(); iy++)
-            data->setValueAtIndex(ix, iy, backup->valueAtIndex(iy,ix));
+    for(int iy = 0; iy < data->rows(); iy++)
+        for(int ix = 0; ix < data->cols(); ix++)
+            newValues.append(data->valueAtIndex(ix, iy));
 
-    delete backup;
+    *data = GridData2D(data->yValues(), data->xValues(), newValues);
 }
 
 QWidget * TransposeFilter::createControlWidget() {

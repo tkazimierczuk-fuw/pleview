@@ -29,6 +29,7 @@ public:
     //! Set action name according to given axis name (e.g. "x")
     void setAxisName(Qt::Orientation orientation, const QString &name);
 
+    void setZoomerActive(bool active);
 
 
 signals:

@@ -2,72 +2,47 @@
 #define MAPPERPLUGIN_H
 
 #include <QtGui>
+#include <QGroupBox>
 
 #include "plotaddons.h"
+#include "vectorwidget.h"
+
+#include "advancedplot.h"
+#include "voronoi_plot_item.h"
 
 
-
-class SimpleColorImage : public QFrame {
+class SimpleVoronoiWidget : public QFrame {
     Q_OBJECT
 public:
-    SimpleColorImage();
-
-    //! Set number of tiles to be plotted
-    void setTiles(int nx, int ny) {
-        _nx = nx; _ny = ny; update();
-    }
+    SimpleVoronoiWidget();
+    ~SimpleVoronoiWidget();
 
     //! Set colormap that will be used
     void setColorMap(const ColorMap &map) {
-        _colormap = map; update();
+      plotter->setColorMap(map); update();
     }
 
-    //! Return data used
-    QVector<double> data() const {
-        return _data;
-    }
+    //! Set the grid of points
+    void setPoints(QVector<double> xs, QVector<double> ys);
+    void setPoints(QPolygonF);
 
-    //! Return size of image in tiles
-    QSize resolution() const {
-        return QSize(_nx, _ny);
-    }
 
-    //! Set information about the scaling of the image
-    void setRaster(const QTransform &transform) {
-        scaling = transform;
-        update();
-    }
-
-    //! Set information about the scaling of the image
-    void setRaster(double x0, double y0, double dx, double dy) {
-        setRaster( QTransform::fromScale(dx, dy).translate(x0, y0) );
-    }
-
-    //! Set raster manually (called by context menu)
-    void setRaster();
-
-    //! Set color scale manually (called by context menu)
+    //! Set color scale in a dialog window (called by context menu)
     void setColorScale();
 
-    //! Return information about the scaling of the image
-    QTransform raster() const {
-        return scaling;
+
+public slots:
+    //! Set cross-section data
+    void setData(const QVector<double> &data) {
+        plotter->setValues(data); update();
     }
 
-    //! Set new color scale. NaN mean automatic calculation of given limit.
-    void setColorScale(double min, double max) {
-        _min = min;
-        _max = max;
-        update();
-    }
+    //! Present a menu to change the color scale or export the map as graphics
+    void showContextMenu(const QPoint& pos);
 
-    double colorScaleMinimum() const {
-        return _min;
-    }
-
-    double colorScaleMaximum() const {
-        return _max;
-    }
+signals:
+    //! Emitted when the mouse is middle-clicked over some voronoi polygon
+    void tileClicked(int n);
 
 
 protected:
@@ -81,33 +56,16 @@ protected:
     void mouseReleaseEvent(QMouseEvent * event) override;
     void mouseMoveEvent(QMouseEvent * event) override;
 
-
     //! Translates mouse coordinate into tile coordinates
     QPointF posToCoordinates(QPoint pos) const;
 
 
-
-
-public slots:
-    //! Set cross-section data
-    void setData(int nx, int ny, const QVector<double> &data) {
-        _nx = nx; _ny = ny; _data = data; update();
-    }
-
-    //! Present an option to set step size
-    void showContextMenu(const QPoint& pos);
-
-
-signals:
-    void tileClicked(int x, int y);
-
 private:
-    int _nx, _ny;
-    double _min, _max; // NaN if the limits are automatically calculated
-    QVector<double> _data;
-    ColorMap _colormap;
-    QTransform scaling;
+    QMatrix scaling;
+    VoronoiPlotItem * plotter;
+
 };
+
 
 
 
@@ -138,45 +96,56 @@ public:
     //! @see Model::unserializeFromXml()
     void unserializeFromXml(QXmlStreamReader *reader);
 
+    enum Path {Z, ZigZag, Custom};
+
 
 private:
     //! Delegated part of the constructor devoted controls for the advanced options
     //void createAdvancedOptions();
 
 private slots:
-    //! Update map after changing one of control widgets
-    void crossSectionChanged();
+    //! Update the displayed map.
+    void updateMap();
 
     //! Set new cross-section
     void crossSectionChanged(const CrossSection &cs);
 
-    //! Starts a new Pleview instance. Data is passed through temporary file
-    void spawnRequested();
-
 
     //! Requests showing a cross-section corresponding to a given tile
-    void showSpectrum(int x, int y);
+    void showSpectrum(int n);
 
     //! Sets a custom vector
     void setVector(QVector<double> vec);
+
+    //! Switch between custom vector and cross-section values
+    void setCustom(bool);
+
+    //! Updates current path according to the widget state
+    void pathChanged();
 
 signals:
     void setCrossSection(int direction, int pixel);
 
 
 private:
-    QVector<double> xsectionvector, customvector;
+    QVector<double> _values, _customvalues;
+    Path path;
+    int direction;
+    int nx; // number of tiles in one row
+    bool useCustom;
 
+
+    // Widgets
     QFrame *_frame;
-    SimpleColorImage * image;
+    SimpleVoronoiWidget * voronoiWidget;
     CrossSection _crossSection;
     QSpinBox *xPointsSpinBox, *yPointsSpinBox;
+    VectorWidget *xPointsWidget, *yPointsWidget, *valuesWidget;
     QComboBox * directionCombo;
     QComboBox * scanTypeBox;
-    // QCheckBox *flipXCheckBox, *flipYCheckBox;
+    QCheckBox * _useCustomWidget;
 
-    //QCheckBox *manualMinimum, *manualMaximum;
-    //QLineEdit *minimumEdit, *maximumEdit;
+    QList<QWidget*> custompathwidgets, rectpathwidgets;
 
 };
 

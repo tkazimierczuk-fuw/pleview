@@ -23,7 +23,7 @@
 class QWT_EXPORT GridData2D : public Data {
 public:
     GridData2D();
-    GridData2D(QVector<double> &ys, QVector<double> &xs, QVector<double> &zs);
+    GridData2D(const QVector<double> &ys, const QVector<double> &xs, const QVector<double> &zs);
 
     double minX() const { return _minX; }
     double minY() const { return _minY; }

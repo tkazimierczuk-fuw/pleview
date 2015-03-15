@@ -34,6 +34,7 @@ INCLUDE_DIRECTORIES(
     ${pleview_SOURCE_DIR}/muparser/include
     ${pleview_SOURCE_DIR}/zlib/
     ${pleview_SOURCE_DIR}/src/plugins/
+    ${pleview_SOURCE_DIR}/voro
 ${pleview_SOURCE_DIR}/src/plugins/zeemanplugin
 ${pleview_SOURCE_DIR}/src/plugins/mapper
 ${pleview_SOURCE_DIR}/src/plugins/xsectionfitter
@@ -54,6 +55,9 @@ ${pleview_SOURCE_DIR}/src/plugins/foldfilter
 ADD_SUBDIRECTORY(qwt-tk)
 ADD_SUBDIRECTORY(muparser)
 ADD_SUBDIRECTORY(zlib)
+
+SET(USEQWT ON CACHE BOOL "Enable Qwt support")
+ADD_SUBDIRECTORY(voro)
 
 
 SET(PLEVIEW_VERSION_MAJOR "0")
@@ -173,7 +177,7 @@ ${pleview_SOURCE_DIR}/src/plugins/zeemanplugin/linleastsq.cpp
 QT5_ADD_RESOURCES( RC_SRCS  ${pleview_SOURCE_DIR}/img/resources.qrc)
 
 ADD_EXECUTABLE(pleview WIN32 ${Pleview_SRCS} ${RC_SRCS} ${pleview_SOURCE_DIR}/img/pleview.rc ${plugin_SRCS})
-TARGET_LINK_LIBRARIES(pleview Qt5::Widgets Qt5::Svg Qt5::PrintSupport Qt5::Concurrent qwt-tk muparser zlib)
+TARGET_LINK_LIBRARIES(pleview Qt5::Widgets Qt5::Svg Qt5::PrintSupport Qt5::Concurrent qwt-tk muparser zlib voro)
 
 
 #ADD_SUBDIRECTORY(src/plugins)
