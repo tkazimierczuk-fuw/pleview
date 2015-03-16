@@ -312,18 +312,17 @@ void container_boundary_2d::tag_line(int &ij,int ije,int wid_) {
 	}
 }
 
-inline void container_boundary_2d::tag(int ij,int wid_) {
-	int *&wp(wid[ij]);
-	if(*wp==wp[1]) {
-		int nws=wp[1]<<1;
+inline void container_boundary_2d::tag(int ij,int wwid_) {
+	if(*(wid[ij])==(wid[ij])[1]) {
+		int nws=(wid[ij])[1]<<1;
 		if(nws>max_wall_tag_size) voro_fatal_error("Maximum wall tag memory exceeded",VOROPP_MEMORY_ERROR);
 		int *np=new int[nws+2];
-		*np=*wp;np[1]=nws;
-		for(int i=2;i<*wp+2;i++) np[i]=wp[i];
-		delete [] wp;
-		wp=np;
+		*np=*(wid[ij]);np[1]=nws;
+		for(int i=2;i<*(wid[ij])+2;i++) np[i]=(wid[ij])[i];
+		delete [] (wid[ij]);
+		(wid[ij])=np;
 	}
-	wp[2+(*wp)++]=wid_;
+	(wid[ij])[2+(*(wid[ij]))++]=wwid_;
 }
 
 /* Tags particles that are within a semicircle (on the appropriate side) of a
