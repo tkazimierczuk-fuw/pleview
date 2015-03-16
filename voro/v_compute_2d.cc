@@ -727,7 +727,7 @@ inline void voro_compute_2d<c_class_2d>::add_list_memory(int*& qu_s,int*& qu_e) 
 	qu_size<<=1;
 	int *qu_n=new int[qu_size],*qu_c=qu_n;
 #if VOROPP_VERBOSE >=2
-	fprintf(stderr,"List memory scaled up to %d\n",qu_size);
+//	fprintf(stderr,"List memory scaled up to %d\n",qu_size);
 #endif
 	if(qu_s<=qu_e) {
 		while(qu_s<qu_e) *(qu_c++)=*(qu_s++);

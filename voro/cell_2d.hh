@@ -4,7 +4,6 @@
 #ifndef VOROPP_CELL_2D_HH
 #define VOROPP_CELL_2D_HH
 
-#include <cstdio>
 #include <cstdlib>
 #include <cmath>
 #include <vector>
@@ -37,48 +36,7 @@ class voronoicell_base_2d {
 		voronoicell_base_2d();
 		~voronoicell_base_2d();
 		void init_base(double xmin,double xmax,double ymin,double ymax);
-		void draw_gnuplot(double x,double y,FILE *fp=stdout);
-		/** Outputs the edges of the Voronoi cell in gnuplot format to
-		 * an output stream.
-		 * \param[in] (x,y) a displacement vector to be added to the
-		 *            cell's position.
-		 * \param[in] filename the file to write to. */
-		inline void draw_gnuplot(double x,double y,const char *filename) {
-			FILE *fp=safe_fopen(filename,"w");
-			draw_gnuplot(x,y,fp);
-			fclose(fp);
-		}
-		void draw_pov(double x,double y,FILE *fp=stdout);
-		/** Outputs the edges of the Voronoi cell in POV-Ray format to
-		 * an open file stream, displacing the cell by given vector.
-		 * \param[in] (x,y,z) a displacement vector to be added to the
-		 *                    cell's position.
-		 * \param[in] filename the file to write to. */
-		inline void draw_pov(double x,double y,const char *filename) {
-			FILE *fp=safe_fopen(filename,"w");
-			draw_pov(x,y,fp);
-			fclose(fp);
-		}
-		void output_custom(const char *format,int i,double x,double y,double r,FILE *fp=stdout);
-		/** Computes the Voronoi cells for all particles in the
-		 * container, and for each cell, outputs a line containing
-		 * custom information about the cell structure. The output
-		 * format is specified using an input string with control
-		 * sequences similar to the standard C printf() routine.
-		 * \param[in] format the format of the output lines, using
-		 *                   control sequences to denote the different
-		 *                   cell statistics.
-		 * \param[in] i the ID of the particle associated with this
-		 *              Voronoi cell.
-		 * \param[in] (x,y) the position of the particle associated
-		 *                  with this Voronoi cell.
-		 * \param[in] r a radius associated with the particle.
-		 * \param[in] filename the file to write to. */
-		inline void output_custom(const char *format,int i,double x,double y,double r,const char *filename) {
-			FILE *fp=safe_fopen(filename,"w");
-			output_custom(format,i,x,y,r,fp);
-			fclose(fp);
-		}
+
 		template<class vc_class>
 		bool nplane(vc_class &vc,double x,double y,double rs,int p_id);
 		template<class vc_class>
@@ -91,10 +49,8 @@ class voronoicell_base_2d {
 		double perimeter();
 		double area();
 		void vertices(vector<double> &v);
-		void output_vertices(FILE *fp=stdout);
         void ordered_vertices(double x,double y,vector<double> &v);
 		void vertices(double x,double y,vector<double> &v);
-		void output_vertices(double x,double y,FILE *fp=stdout);
 		void edge_lengths(vector<double> &vd);
 		void normals(vector<double> &vd);	
 		void centroid(double &cx,double &cy);

@@ -10,7 +10,6 @@
 #ifndef VOROPP_CONTAINER_2D_HH
 #define VOROPP_CONTAINER_2D_HH
 
-#include <cstdio>
 #include <cstdlib>
 #include <cmath>
 #include <vector>
@@ -159,7 +158,7 @@ class container_base_2d : public voro_base_2d, public wall_list_2d {
 				int init_mem,int ps_);
 		~container_base_2d();
 		bool point_inside(double x,double y);
-		void region_count();
+        //void region_count();
 		inline bool skip(int ij,int l,double x,double y) {return false;}
 		template<class v_cell_2d>
 		inline bool boundary_cuts(v_cell_2d &c,int ij,double x,double y) {return true;}
@@ -239,22 +238,6 @@ class container_base_2d : public voro_base_2d, public wall_list_2d {
 			if(yperiodic) {if(cj+ej<ny) {ej+=ny;qy=-(by-ay);} else if(cj+ej>=(ny<<1)) {ej-=ny;qy=by-ay;} else qy=0;}
 			return disp+ei+nx*ej;
 		}
-		void draw_domain_gnuplot(FILE *fp=stdout);
-		/** Draws an outline of the domain in Gnuplot format.
-		 * \param[in] filename the filename to write to. */
-		inline void draw_domain_gnuplot(const char* filename) {
-			FILE *fp=safe_fopen(filename,"w");
-			draw_domain_gnuplot(fp);
-			fclose(fp);
-		}
-		void draw_domain_pov(FILE *fp=stdout);
-		/** Draws an outline of the domain in Gnuplot format.
-		 * \param[in] filename the filename to write to. */
-		inline void draw_domain_pov(const char* filename) {
-			FILE *fp=safe_fopen(filename,"w");
-			draw_domain_pov(fp);
-			fclose(fp);
-		}
 		/** Sums up the total number of stored particles.
 		 * \return The number of particles. */
 		inline int total_particles() {
@@ -282,163 +265,9 @@ class container_2d : public container_base_2d, public radius_mono {
 		void clear();
 		void put(int n,double x,double y);
 		void put(particle_order &vo,int n,double x,double y);
-		void import(FILE *fp=stdin);
-		void import(particle_order &vo,FILE *fp=stdin);
-		/** Imports a list of particles from an open file stream into
-		 * the container. Entries of three numbers (Particle ID, x
-		 * position, y position) are searched for. If the file cannot
-		 * be successfully read, then the routine causes a fatal error.
-		 * \param[in] filename the name of the file to open and read
-		 *                     from. */
-		inline void import(const char* filename) {
-			FILE *fp=safe_fopen(filename,"r");
-			import(fp);
-			fclose(fp);
-		}
-		/** Imports a list of particles from an open file stream into
-		 * the container. Entries of three numbers (Particle ID, x
-		 * position, y position) are searched for. In addition, the
-		 * order in which particles are read is saved into an ordering
-		 * class. If the file cannot be successfully read, then the
-		 * routine causes a fatal error.
-		 * \param[in,out] vo the ordering class to use.
-		 * \param[in] filename the name of the file to open and read
-		 *                     from. */
-		inline void import(particle_order &vo,const char* filename) {
-			FILE *fp=safe_fopen(filename,"r");
-			import(vo,fp);
-			fclose(fp);
-		}
 		void compute_all_cells();
 		double sum_cell_areas();
-		/** Dumps particle IDs and positions to a file.
-		 * \param[in] vl the loop class to use.
-		 * \param[in] fp a file handle to write to. */
-		template<class c_loop_2d>
-		void draw_particles(c_loop_2d &vl,FILE *fp) {
-			double *pp;
-			if(vl.start()) do {
-				pp=p[vl.ij]+2*vl.q;
-				fprintf(fp,"%d %g %g\n",id[vl.ij][vl.q],*pp,pp[1]);
-			} while(vl.inc());
-		}
-		/** Dumps all of the particle IDs and positions to a file.
-		 * \param[in] fp a file handle to write to. */
-		inline void draw_particles(FILE *fp=stdout) {
-			c_loop_all_2d vl(*this);
-			draw_particles(vl,fp);
-		}
-		/** Dumps all of the particle IDs and positions to a file.
-		 * \param[in] filename the name of the file to write to. */
-		inline void draw_particles(const char *filename) {
-			FILE *fp=safe_fopen(filename,"w");
-			draw_particles(fp);
-			fclose(fp);
-		}
-		/** Dumps particle positions in POV-Ray format.
-		 * \param[in] vl the loop class to use.
-		 * \param[in] fp a file handle to write to. */
-		template<class c_loop_2d>
-		void draw_particles_pov(c_loop_2d &vl,FILE *fp) {
-			double *pp;
-			if(vl.start()) do {
-				pp=p[vl.ij]+2*vl.q;
-				fprintf(fp,"// id %d\nsphere{<%g,%g,0>,s}\n",
-						id[vl.ij][vl.q],*pp,pp[1]);
-			} while(vl.inc());
-		}
-		/** Dumps all particle positions in POV-Ray format.
-		 * \param[in] fp a file handle to write to. */
-		inline void draw_particles_pov(FILE *fp=stdout) {
-			c_loop_all_2d vl(*this);
-			draw_particles_pov(vl,fp);
-		}
-		/** Dumps all particle positions in POV-Ray format.
-		 * \param[in] filename the name of the file to write to. */
-		inline void draw_particles_pov(const char *filename) {
-			FILE *fp=safe_fopen(filename,"w");
-			draw_particles_pov(fp);
-			fclose(fp);
-		}
-		/** Computes Voronoi cells and saves the output in gnuplot
-		 * format.
-		 * \param[in] vl the loop class to use.
-		 * \param[in] fp a file handle to write to. */
-		template<class c_loop_2d>
-		void draw_cells_gnuplot(c_loop_2d &vl,FILE *fp) {
-			voronoicell_2d c;double *pp;
-			if(vl.start()) do if(compute_cell(c,vl)) {
-				pp=p[vl.ij]+ps*vl.q;
-				c.draw_gnuplot(*pp,pp[1],fp);
-			} while(vl.inc());
-		}
-		/** Computes all Voronoi cells and saves the output in gnuplot
-		 * format.
-		 * \param[in] fp a file handle to write to. */
-		inline void draw_cells_gnuplot(FILE *fp=stdout) {
-			c_loop_all_2d vl(*this);
-			draw_cells_gnuplot(vl,fp);
-		}
-		/** Computes all Voronoi cells and saves the output in gnuplot
-		 * format.
-		 * \param[in] filename the name of the file to write to. */
-		inline void draw_cells_gnuplot(const char *filename) {
-			FILE *fp=safe_fopen(filename,"w");
-			draw_cells_gnuplot(fp);
-			fclose(fp);
-		}
-		/** Computes Voronoi cells and saves the output in POV-Ray
-		 * format.
-		 * \param[in] vl the loop class to use.
-		 * \param[in] fp a file handle to write to. */
-		template<class c_loop_2d>
-		void draw_cells_pov(c_loop_2d &vl,FILE *fp) {
-			voronoicell_2d c;double *pp;
-			if(vl.start()) do if(compute_cell(c,vl)) {
-				fprintf(fp,"// cell %d\n",id[vl.ij][vl.q]);
-				pp=p[vl.ij]+ps*vl.q;
-				c.draw_pov(*pp,pp[1],fp);
-			} while(vl.inc());
-		}
-		/** Computes all Voronoi cells and saves the output in POV-Ray
-		 * format.
-		 * \param[in] fp a file handle to write to. */
-		inline void draw_cells_pov(FILE *fp=stdout) {
-			c_loop_all_2d vl(*this);
-			draw_cells_pov(vl,fp);
-		}
-		/** Computes all Voronoi cells and saves the output in POV-Ray
-		 * format.
-		 * \param[in] filename the name of the file to write to. */
-		inline void draw_cells_pov(const char *filename) {
-			FILE *fp=safe_fopen(filename,"w");
-			draw_cells_pov(fp);
-			fclose(fp);
-		}
-		/** Computes the Voronoi cells and saves customized information
-		 * about them.
-		 * \param[in] vl the loop class to use.
-		 * \param[in] format the custom output string to use.
-		 * \param[in] fp a file handle to write to. */
-		template<class c_loop_2d>
-		void print_custom(c_loop_2d &vl,const char *format,FILE *fp) {
-			int ij,q;double *pp;
-			if(contains_neighbor(format)) {
-				voronoicell_neighbor_2d c;
-				if(vl.start()) do if(compute_cell(c,vl)) {
-					ij=vl.ij;q=vl.q;pp=p[ij]+ps*q;
-					c.output_custom(format,id[ij][q],*pp,pp[1],default_radius_2d,fp);
-				} while(vl.inc());
-			} else {
-				voronoicell_2d c;
-				if(vl.start()) do if(compute_cell(c,vl)) {
-					ij=vl.ij;q=vl.q;pp=p[ij]+ps*q;
-					c.output_custom(format,id[ij][q],*pp,pp[1],default_radius_2d,fp);
-				} while(vl.inc());
-			}
-		}
-		void print_custom(const char *format,FILE *fp=stdout);
-		void print_custom(const char *format,const char *filename);
+
 		bool find_voronoi_cell(double x,double y,double &rx,double &ry,int &pid);
 		/** Computes the Voronoi cell for a particle currently being
 		 * referenced by a loop class.
@@ -483,164 +312,8 @@ class container_poly_2d : public container_base_2d, public radius_poly {
 		void clear();
 		void put(int n,double x,double y,double r);
 		void put(particle_order &vo,int n,double x,double y,double r);
-		void import(FILE *fp=stdin);
-		void import(particle_order &vo,FILE *fp=stdin);
-		/** Imports a list of particles from an open file stream into
-		 * the container_poly class. Entries of four numbers (Particle
-		 * ID, x position, y position, radius) are searched for. If the
-		 * file cannot be successfully read, then the routine causes a
-		 * fatal error.
-		 * \param[in] filename the name of the file to open and read
-		 *                     from. */
-		inline void import(const char* filename) {
-			FILE *fp=safe_fopen(filename,"r");
-			import(fp);
-			fclose(fp);
-		}
-		/** Imports a list of particles from an open file stream into
-		 * the container_poly class. Entries of four numbers (Particle
-		 * ID, x position, y position, radius) are searched for. In
-		 * addition, the order in which particles are read is saved
-		 * into an ordering class. If the file cannot be successfully
-		 * read, then the routine causes a fatal error.
-		 * \param[in,out] vo the ordering class to use.
-		 * \param[in] filename the name of the file to open and read
-		 *                     from. */
-		inline void import(particle_order &vo,const char* filename) {
-			FILE *fp=safe_fopen(filename,"r");
-			import(vo,fp);
-			fclose(fp);
-		}
 		void compute_all_cells();
 		double sum_cell_areas();
-		/** Dumps particle IDs, positions and radii to a file.
-		 * \param[in] vl the loop class to use.
-		 * \param[in] fp a file handle to write to. */
-		template<class c_loop_2d>
-		void draw_particles(c_loop_2d &vl,FILE *fp) {
-			double *pp;
-			if(vl.start()) do {
-				pp=p[vl.ij]+3*vl.q;
-				fprintf(fp,"%d %g %g %g\n",id[vl.ij][vl.q],*pp,pp[1],pp[2]);
-			} while(vl.inc());
-		}
-		/** Dumps all of the particle IDs, positions and radii to a
-		 * file.
-		 * \param[in] fp a file handle to write to. */
-		inline void draw_particles(FILE *fp=stdout) {
-			c_loop_all_2d vl(*this);
-			draw_particles(vl,fp);
-		}
-		/** Dumps all of the particle IDs, positions and radii to a
-		 * file.
-		 * \param[in] filename the name of the file to write to. */
-		inline void draw_particles(const char *filename) {
-			FILE *fp=safe_fopen(filename,"w");
-			draw_particles(fp);
-			fclose(fp);
-		}
-		/** Dumps particle positions in POV-Ray format.
-		 * \param[in] vl the loop class to use.
-		 * \param[in] fp a file handle to write to. */
-		template<class c_loop_2d>
-		void draw_particles_pov(c_loop_2d &vl,FILE *fp) {
-			double *pp;
-			if(vl.start()) do {
-				pp=p[vl.ij]+3*vl.q;
-				fprintf(fp,"// id %d\nsphere{<%g,%g,0>,%g}\n",
-						id[vl.ij][vl.q],*pp,pp[1],pp[2]);
-			} while(vl.inc());
-		}
-		/** Dumps all the particle positions in POV-Ray format.
-		 * \param[in] fp a file handle to write to. */
-		inline void draw_particles_pov(FILE *fp=stdout) {
-			c_loop_all_2d vl(*this);
-			draw_particles_pov(vl,fp);
-		}
-		/** Dumps all the particle positions in POV-Ray format.
-		 * \param[in] filename the name of the file to write to. */
-		inline void draw_particles_pov(const char *filename) {
-			FILE *fp=safe_fopen(filename,"w");
-			draw_particles_pov(fp);
-			fclose(fp);
-		}
-		/** Computes Voronoi cells and saves the output in gnuplot
-		 * format.
-		 * \param[in] vl the loop class to use.
-		 * \param[in] fp a file handle to write to. */
-		template<class c_loop_2d>
-		void draw_cells_gnuplot(c_loop_2d &vl,FILE *fp) {
-			voronoicell_2d c;double *pp;
-			if(vl.start()) do if(compute_cell(c,vl)) {
-				pp=p[vl.ij]+ps*vl.q;
-				c.draw_gnuplot(*pp,pp[1],fp);
-			} while(vl.inc());
-		}
-		/** Compute all Voronoi cells and saves the output in gnuplot
-		 * format.
-		 * \param[in] fp a file handle to write to. */
-		inline void draw_cells_gnuplot(FILE *fp=stdout) {
-			c_loop_all_2d vl(*this);
-			draw_cells_gnuplot(vl,fp);
-		}
-		/** Compute all Voronoi cells and saves the output in gnuplot
-		 * format.
-		 * \param[in] filename the name of the file to write to. */
-		inline void draw_cells_gnuplot(const char *filename) {
-			FILE *fp=safe_fopen(filename,"w");
-			draw_cells_gnuplot(fp);
-			fclose(fp);
-		}
-		/** Computes Voronoi cells and saves the output in POV-Ray
-		 * format.
-		 * \param[in] vl the loop class to use.
-		 * \param[in] fp a file handle to write to. */
-		template<class c_loop_2d>
-		void draw_cells_pov(c_loop_2d &vl,FILE *fp) {
-			voronoicell_2d c;double *pp;
-			if(vl.start()) do if(compute_cell(c,vl)) {
-				fprintf(fp,"// cell %d\n",id[vl.ij][vl.q]);
-				pp=p[vl.ij]+ps*vl.q;
-				c.draw_pov(*pp,pp[1],fp);
-			} while(vl.inc());
-		}
-		/** Computes all Voronoi cells and saves the output in POV-Ray
-		 * format.
-		 * \param[in] fp a file handle to write to. */
-		inline void draw_cells_pov(FILE *fp=stdout) {
-			c_loop_all_2d vl(*this);
-			draw_cells_pov(vl,fp);
-		}
-		/** Computes all Voronoi cells and saves the output in POV-Ray
-		 * format.
-		 * \param[in] filename the name of the file to write to. */
-		inline void draw_cells_pov(const char *filename) {
-			FILE *fp=safe_fopen(filename,"w");
-			draw_cells_pov(fp);
-			fclose(fp);
-		}
-		/** Computes the Voronoi cells and saves customized information
-		 * about them.
-		 * \param[in] vl the loop class to use.
-		 * \param[in] format the custom output string to use.
-		 * \param[in] fp a file handle to write to. */
-		template<class c_loop_2d>
-		void print_custom(c_loop_2d &vl,const char *format,FILE *fp) {
-			int ij,q;double *pp;
-			if(contains_neighbor(format)) {
-				voronoicell_neighbor_2d c;
-				if(vl.start()) do if(compute_cell(c,vl)) {
-					ij=vl.ij;q=vl.q;pp=p[ij]+ps*q;
-					c.output_custom(format,id[ij][q],*pp,pp[1],pp[2],fp);
-				} while(vl.inc());
-			} else {
-				voronoicell_2d c;
-				if(vl.start()) do if(compute_cell(c,vl)) {
-					ij=vl.ij;q=vl.q;pp=p[ij]+ps*q;
-					c.output_custom(format,id[ij][q],*pp,pp[1],pp[2],fp);
-				} while(vl.inc());
-			}
-		}
 		/** Computes the Voronoi cell for a particle currently being
 		 * referenced by a loop class.
 		 * \param[out] c a Voronoi cell class in which to store the
@@ -666,8 +339,6 @@ class container_poly_2d : public container_base_2d, public radius_poly {
 			int j=ij/nx,i=ij-j*nx;
 			return vc.compute_cell(c,ij,q,i,j);
 		}
-		void print_custom(const char *format,FILE *fp=stdout);
-		void print_custom(const char *format,const char *filename);
 		bool find_voronoi_cell(double x,double y,double &rx,double &ry,int &pid);
 	private:
 		voro_compute_2d<container_poly_2d> vc;

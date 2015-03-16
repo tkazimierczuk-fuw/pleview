@@ -6,7 +6,6 @@
 
 /** \file v_base_2d.cc
  * \brief Function implementations for the base 2D Voronoi container class. */
-//#include <stdio.h>
 
 #include "v_base_2d.hh"
 #include "config.hh"

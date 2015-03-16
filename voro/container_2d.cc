@@ -152,7 +152,7 @@ inline bool container_base_2d::put_locate_block(int &ij,double &x,double &y) {
 		return true;
 	}
 #if VOROPP_REPORT_OUT_OF_BOUNDS ==1
-	fprintf(stderr,"Out of bounds: (x,y)=(%g,%g)\n",x,y);
+//	fprintf(stderr,"Out of bounds: (x,y)=(%g,%g)\n",x,y);
 #endif
 	return false;
 }
@@ -289,7 +289,7 @@ void container_base_2d::add_particle_memory(int i) {
 	if(nmem>max_particle_memory_2d)
 		voro_fatal_error("Absolute maximum memory allocation exceeded",VOROPP_MEMORY_ERROR);
 #if VOROPP_VERBOSE >=3
-	fprintf(stderr,"Particle memory in region %d scaled up to %d\n",i,nmem);
+//	fprintf(stderr,"Particle memory in region %d scaled up to %d\n",i,nmem);
 #endif
 
 	// Allocate new memory and copy in the contents of the old arrays
@@ -304,63 +304,6 @@ void container_base_2d::add_particle_memory(int i) {
 	delete [] p[i];p[i]=pp;
 }
 
-/** Import a list of particles from an open file stream into the container.
- * Entries of four numbers (Particle ID, x position, y position, z position)
- * are searched for. If the file cannot be successfully read, then the routine
- * causes a fatal error.
- * \param[in] fp the file handle to read from. */
-void container_2d::import(FILE *fp) {
-	int i,j;
-	double x,y;
-	while((j=fscanf(fp,"%d %lg %lg",&i,&x,&y))==3) put(i,x,y);
-	if(j!=EOF) voro_fatal_error("File import error",VOROPP_FILE_ERROR);
-}
-
-/** Import a list of particles from an open file stream, also storing the order
- * of that the particles are read. Entries of four numbers (Particle ID, x
- * position, y position, z position) are searched for. If the file cannot be
- * successfully read, then the routine causes a fatal error.
- * \param[in,out] vo a reference to an ordering class to use.
- * \param[in] fp the file handle to read from. */
-void container_2d::import(particle_order &vo,FILE *fp) {
-	int i,j;
-	double x,y;
-	while((j=fscanf(fp,"%d %lg %lg",&i,&x,&y))==3) put(vo,i,x,y);
-	if(j!=EOF) voro_fatal_error("File import error",VOROPP_FILE_ERROR);
-}
-
-/** Import a list of particles from an open file stream into the container.
- * Entries of five numbers (Particle ID, x position, y position, z position,
- * radius) are searched for. If the file cannot be successfully read, then the
- * routine causes a fatal error.
- * \param[in] fp the file handle to read from. */
-void container_poly_2d::import(FILE *fp) {
-	int i,j;
-	double x,y,r;
-	while((j=fscanf(fp,"%d %lg %lg %lg",&i,&x,&y,&r))==4) put(i,x,y,r);
-	if(j!=EOF) voro_fatal_error("File import error",VOROPP_FILE_ERROR);
-}
-
-/** Import a list of particles from an open file stream, also storing the order
- * of that the particles are read. Entries of four numbers (Particle ID, x
- * position, y position, z position, radius) are searched for. If the file
- * cannot be successfully read, then the routine causes a fatal error.
- * \param[in,out] vo a reference to an ordering class to use.
- * \param[in] fp the file handle to read from. */
-void container_poly_2d::import(particle_order &vo,FILE *fp) {
-	int i,j;
-	double x,y,r;
-	while((j=fscanf(fp,"%d %lg %lg %lg",&i,&x,&y,&r))==4) put(vo,i,x,y,r);
-	if(j!=EOF) voro_fatal_error("File import error",VOROPP_FILE_ERROR);
-}
-
-/** Outputs the a list of all the container regions along with the number of
- * particles stored within each. */
-void container_base_2d::region_count() {
-	int i,j,*cop=co;
-	for(j=0;j<ny;j++) for(i=0;i<nx;i++)
-		printf("Region (%d,%d): %d particles\n",i,j,*(cop++));
-}
 
 /** Clears a container of particles. */
 void container_2d::clear() {
@@ -374,41 +317,6 @@ void container_poly_2d::clear() {
 	max_radius=0;
 }
 
-/** Computes all the Voronoi cells and saves customized information about them.
- * \param[in] format the custom output string to use.
- * \param[in] fp a file handle to write to. */
-void container_2d::print_custom(const char *format,FILE *fp) {
-	c_loop_all_2d vl(*this);
-	print_custom(vl,format,fp);
-}
-
-/** Computes all the Voronoi cells and saves customized
- * information about them.
- * \param[in] format the custom output string to use.
- * \param[in] fp a file handle to write to. */
-void container_poly_2d::print_custom(const char *format,FILE *fp) {
-	c_loop_all_2d vl(*this);
-	print_custom(vl,format,fp);
-}
-
-/** Computes all the Voronoi cells and saves customized information about them.
- * \param[in] format the custom output string to use.
- * \param[in] filename the name of the file to write to. */
-void container_2d::print_custom(const char *format,const char *filename) {
-	FILE *fp=safe_fopen(filename,"w");
-	print_custom(format,fp);
-	fclose(fp);
-}
-
-/** Computes all the Voronoi cells and saves customized
- * information about them
- * \param[in] format the custom output string to use.
- * \param[in] filename the name of the file to write to. */
-void container_poly_2d::print_custom(const char *format,const char *filename) {
-	FILE *fp=safe_fopen(filename,"w");
-	print_custom(format,fp);
-	fclose(fp);
-}
 
 /** Computes all of the Voronoi cells in the container, but does nothing
  * with the output. It is useful for measuring the pure computation time
@@ -465,22 +373,7 @@ bool container_base_2d::point_inside(double x,double y) {
 	return point_inside_walls(x,y);
 }
 
-/** Draws an outline of the domain in gnuplot format.
- * \param[in] fp the file handle to write to. */
-void container_base_2d::draw_domain_gnuplot(FILE *fp) {
-	fprintf(fp,"%g %g\n%g %g\n%g %g\n%g %g\n%g %g\n",ax,ay,bx,ay,bx,by,ax,by,ax,ay);
-}
 
-/** Draws an outline of the domain in POV-Ray format.
- * \param[in] fp the file handle to write to. */
-void container_base_2d::draw_domain_pov(FILE *fp) {
-	fprintf(fp,"cylinder{<%g,%g,0>,<%g,%g,0>,rr}\n"
-		   "cylinder{<%g,%g,0>,<%g,%g,0>,rr}\n",ax,ay,bx,ay,ax,by,bx,by);
-	fprintf(fp,"cylinder{<%g,%g,0>,<%g,%g,0>,rr}\n"
-		   "cylinder{<%g,%g,0>,<%g,%g,0>,rr}\n",ax,ay,ax,by,bx,ay,bx,by);
-	fprintf(fp,"sphere{<%g,%g,0>,rr}\nsphere{<%g,%g,0>,rr}\n"
-		   "sphere{<%g,%g,0>,rr}\nsphere{<%g,%g,0>,rr}\n",ax,ay,bx,ay,ax,by,bx,by);	
-}
 
 
 /** The wall_list constructor sets up an array of pointers to wall classes. */

@@ -125,7 +125,7 @@ inline bool container_boundary_2d::put_locate_block(int &ij,double &x,double &y)
 		return true;
 	}
 #if VOROPP_REPORT_OUT_OF_BOUNDS ==1
-	fprintf(stderr,"Out of bounds: (x,y)=(%g,%g)\n",x,y);
+//	fprintf(stderr,"Out of bounds: (x,y)=(%g,%g)\n",x,y);
 #endif
 	return false;
 }
@@ -164,7 +164,7 @@ void container_boundary_2d::add_particle_memory(int i) {
 	if(nmem>max_particle_memory_2d)
 		voro_fatal_error("Absolute maximum memory allocation exceeded",VOROPP_MEMORY_ERROR);
 #if VOROPP_VERBOSE >=3
-	fprintf(stderr,"Particle memory in region %d scaled up to %d\n",i,nmem);
+//	fprintf(stderr,"Particle memory in region %d scaled up to %d\n",i,nmem);
 #endif
 
 	// Allocate new memory and copy in the contents of the old arrays
@@ -188,34 +188,10 @@ void container_boundary_2d::add_particle_memory(int i) {
 	delete [] bndpts[i];bndpts[i]=bndptsp;
 }
 
-/** Outputs the a list of all the container regions along with the number of
- * particles stored within each. */
-void container_boundary_2d::region_count() {
-	int i,j,*cop=co;
-	for(j=0;j<ny;j++) for(i=0;i<nx;i++)
-		printf("Region (%d,%d): %d particles\n",i,j,*(cop++));
-}
 
 /** Clears a container of particles. */
 void container_boundary_2d::clear() {
 	for(int *cop=co;cop<co+nxy;cop++) *cop=0;
-}
-
-/** Computes all the Voronoi cells and saves customized information about them.
- * \param[in] format the custom output string to use.
- * \param[in] fp a file handle to write to. */
-void container_boundary_2d::print_custom(const char *format,FILE *fp) {
-	c_loop_all_2d vl(*this);
-	print_custom(vl,format,fp);
-}
-
-/** Computes all the Voronoi cells and saves customized information about them.
- * \param[in] format the custom output string to use.
- * \param[in] filename the name of the file to write to. */
-void container_boundary_2d::print_custom(const char *format,const char *filename) {
-	FILE *fp=safe_fopen(filename,"w");
-	print_custom(format,fp);
-	fclose(fp);
 }
 
 /** Computes all of the Voronoi cells in the container, but does nothing
@@ -239,23 +215,6 @@ double container_boundary_2d::sum_cell_areas() {
 	c_loop_all_2d vl(*this);
 	if(vl.start()) do if(compute_cell(c,vl)) area+=c.area();while(vl.inc());
 	return area;
-}
-
-/** Draws an outline of the domain in gnuplot format.
- * \param[in] fp the file handle to write to. */
-void container_boundary_2d::draw_domain_gnuplot(FILE *fp) {
-	fprintf(fp,"%g %g\n%g %g\n%g %g\n%g %g\n%g %g\n",ax,ay,bx,ay,bx,by,ax,by,ax,ay);
-}
-
-/** Draws an outline of the domain in POV-Ray format.
- * \param[in] fp the file handle to write to. */
-void container_boundary_2d::draw_domain_pov(FILE *fp) {
-	fprintf(fp,"cylinder{<%g,%g,0>,<%g,%g,0>,rr}\n"
-		   "cylinder{<%g,%g,0>,<%g,%g,0>,rr}\n",ax,ay,bx,ay,ax,by,bx,by);
-	fprintf(fp,"cylinder{<%g,%g,0>,<%g,%g,0>,rr}\n"
-		   "cylinder{<%g,%g,0>,<%g,%g,0>,rr}\n",ax,ay,ax,by,bx,ay,bx,by);
-	fprintf(fp,"sphere{<%g,%g,0>,rr}\nsphere{<%g,%g,0>,rr}\n"
-		   "sphere{<%g,%g,0>,rr}\nsphere{<%g,%g,0>,rr}\n",ax,ay,bx,ay,ax,by,bx,by);	
 }
 
 /** This does the additional set-up for non-convex containers. We assume that
@@ -419,7 +378,7 @@ void container_boundary_2d::create_label_table() {
 	// Check for case of no labels at all (which may be common)
 	if(tlab==0) {
 #if VOROPP_VERBOSE >=2
-		fputs("No labels needed\n",stderr);
+//		fputs("No labels needed\n",stderr);
 #endif
 		return;
 	}
@@ -439,22 +398,6 @@ void container_boundary_2d::create_label_table() {
 	pp=soi;
 	for(ij=0;ij<nxy;ij++) for(q=0;q<co[ij];pp+=nlab[ij][q++]) plab[ij][q]=pp;
 }
-
-/** Draws the boundaries. (Note: this currently assumes that each boundary loop
- * is a continuous block in the bnds array, which will be true for the import
- * function. However, it may not be true in other cases, in which case this
- * routine would have to be extended.) */
-void container_boundary_2d::draw_boundary_gnuplot(FILE *fp) {
-	int i;
-	
-	for(i=0;i<edbc;i++) {
-		fprintf(fp,"%g %g\n",bnds[2*i],bnds[2*i+1]);
-
-		// If a loop is detected, than complete the loop in the output file
-		// and insert a newline
-		if(edb[2*i]<i) fprintf(fp,"%g %g\n\n",bnds[2*edb[2*i]],bnds[2*edb[2*i]+1]);
-	}
-}	
 
 bool container_boundary_2d::point_inside(double x,double y) {
 	int i=0,j=0,k=0;
@@ -478,8 +421,8 @@ bool container_boundary_2d::point_inside(double x,double y) {
 	}
 
 #if VOROPP_VERBOSE >=2
-	if(k<0) fprintf(stderr,"Negative winding number of %d for (%g,%g)\n",j,x,y);
-	else if(k>1) fprintf(stderr,"Winding number of %d for (%g,%g)\n",j,x,y);
+//	if(k<0) fprintf(stderr,"Negative winding number of %d for (%g,%g)\n",j,x,y);
+//	else if(k>1) fprintf(stderr,"Winding number of %d for (%g,%g)\n",j,x,y);
 #endif
 	return k>0;
 }
@@ -525,40 +468,6 @@ bool container_boundary_2d::skip(int ij,int q,double x,double y) {
 
 }
 
-/** Imports a list of particles from an input stream.
- * \param[in] fp a file handle to read from. */
-void container_boundary_2d::import(FILE *fp) {
-	int i;
-	double x,y;
-	char *buf(new char[512]);
-
-	while(fgets(buf,512,fp)!=NULL) {
-		if(strcmp(buf,"#Start\n")==0||strcmp(buf,"# Start\n")==0) {
-
-			// Check that two consecutive start tokens haven't been
-			// encountered
-			if(boundary_track!=-1) voro_fatal_error("File import error - two consecutive start tokens found",VOROPP_FILE_ERROR);
-			start_boundary();
-
-		} else if(strcmp(buf,"#End\n")==0||strcmp(buf,"# End\n")==0||
-			  strcmp(buf,"#End")==0||strcmp(buf,"# End")==0) {
-			
-			// Check that two consecutive end tokens haven't been
-			// encountered
-			if(boundary_track==-1) voro_fatal_error("File import error - found end token without start token",VOROPP_FILE_ERROR);
-			end_boundary();
-		} else {
-
-			// Try and read three entries from the line
-			if(sscanf(buf,"%d %lg %lg",&i,&x,&y)!=3) voro_fatal_error("File import error - can't parse particle information",VOROPP_FILE_ERROR);
-			put(i,x,y);
-		}
-	}
-	if(boundary_track!=-1) voro_fatal_error("File import error - end of file reached without finding end token",VOROPP_FILE_ERROR);
-
-	if(!feof(fp)) voro_fatal_error("File import error - error reading string from file",VOROPP_FILE_ERROR);
-	delete [] buf;	
-}
 
 void container_boundary_2d::end_boundary() {
 	if(boundary_track!=edbc) {
@@ -585,7 +494,7 @@ void container_boundary_2d::add_temporary_label_memory() {
 	if(size>3*max_temp_label_size)
 		voro_fatal_error("Absolute temporary label memory allocation exceeded",VOROPP_MEMORY_ERROR);
 #if VOROPP_VERBOSE >=3
-	fprintf(stderr,"Temporary label memory in region scaled up to %d\n",size);
+//	fprintf(stderr,"Temporary label memory in region scaled up to %d\n",size);
 #endif			
 	int *ntmp(new int[size]),*tp(tmp);tmpp=ntmp;
 	while(tp<tmpe) *(tmpp++)=*(tp++);
@@ -600,7 +509,7 @@ void container_boundary_2d::add_boundary_memory() {
 	if(edbm>max_boundary_size)
 		voro_fatal_error("Absolute boundary memory allocation exceeded",VOROPP_MEMORY_ERROR);
 #if VOROPP_VERBOSE >=3
-	fprintf(stderr,"Boundary memory scaled up to %d\n",size);
+//	fprintf(stderr,"Boundary memory scaled up to %d\n",size);
 #endif
 	
 	// Reallocate the boundary vertex information

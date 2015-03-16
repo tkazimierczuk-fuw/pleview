@@ -33,36 +33,6 @@ void voronoicell_base_2d::init_base(double xmin,double xmax,double ymin,double y
 	*q=1;q[1]=3;q[2]=2;q[3]=0;q[4]=3;q[5]=1;q[6]=0;q[7]=2;
 }
 
-/** Outputs the edges of the Voronoi cell in gnuplot format to an output
- * stream.
- * \param[in] (x,y) a displacement vector to be added to the cell's position.
- * \param[in] fp the file handle to write to. */
-void voronoicell_base_2d::draw_gnuplot(double x,double y,FILE *fp) {
-	if(p==0) return;
-	int k=0;
-	do {
-		fprintf(fp,"%g %g\n",x+0.5*pts[2*k],y+0.5*pts[2*k+1]);
-		k=ed[2*k];
-	} while (k!=0);
-	fprintf(fp,"%g %g\n\n",x+0.5*pts[0],y+0.5*pts[1]);
-}
-
-
-/** Outputs the edges of the Voronoi cell in POV-Ray format to an open file
- * stream, displacing the cell by given vector.
- * \param[in] (x,y) a displacement vector to be added to the cell's position.
- * \param[in] fp the file handle to write to. */
-void voronoicell_base_2d::draw_pov(double x,double y,FILE *fp) {
-	if(p==0) return;
-	int k=0;
-	do {
-		fprintf(fp,"sphere{<%g,%g,0>,r}\ncylinder{<%g,%g,0>,<"
-			,x+0.5*pts[2*k],y+0.5*pts[2*k+1]
-			,x+0.5*pts[2*k],y+0.5*pts[2*k+1]);
-		k=ed[2*k];
-		fprintf(fp,"%g,%g,0>,r}\n",x+0.5*pts[2*k],y+0.5*pts[2*k+1]);
-	} while (k!=0);
-}
 
 /** Computes the maximum radius squared of a vertex from the center of the
  * cell. It can be used to determine when enough particles have been testing an
@@ -252,14 +222,6 @@ void voronoicell_base_2d::vertices(vector<double> &v) {
 	}
 }
 
-/** Outputs the vertex vectors using the local coordinate system.
- * \param[out] fp the file handle to write to. */
-void voronoicell_base_2d::output_vertices(FILE *fp) {
-	if(p>0) {
-		fprintf(fp,"(%g,%g)",*pts*0.5,pts[1]*0.5);
-		for(double *ptsp=pts+2;ptsp<pts+2*p;ptsp+=2) fprintf(fp," (%g,%g)",*ptsp*0.5,ptsp[1]*0.5);
-	}
-}
 
 /** Returns a vector of the vertex vectors in the global coordinate system.
  * \param[out] v the vector to store the results in.
@@ -286,17 +248,6 @@ void voronoicell_base_2d::ordered_vertices(double x,double y,vector<double> &v) 
     } while (k!=0);
 }
 
-
-/** Outputs the vertex vectors using the global coordinate system.
- * \param[out] fp the file handle to write to.
- * \param[in] (x,y,z) the position vector of the particle in the global
- *                    coordinate system. */
-void voronoicell_base_2d::output_vertices(double x,double y,FILE *fp) {
-	if(p>0) {
-		fprintf(fp,"(%g,%g)",x+*pts*0.5,y+pts[1]*0.5);
-		for(double *ptsp=pts+2;ptsp<pts+2*p;ptsp+=2) fprintf(fp," (%g,%g)",x+*ptsp*0.5,y+ptsp[1]*0.5);
-	}
-}
 
 /** Calculates the perimeter of the Voronoi cell.
  * \return A floating point number holding the calculated distance. */
@@ -397,76 +348,6 @@ void voronoicell_base_2d::centroid(double &cx,double &cy) {
 
 
 
-/** Computes the Voronoi cells for all particles in the container, and for each
- * cell, outputs a line containing custom information about the cell structure.
- * The output format is specified using an input string with control sequences
- * similar to the standard C printf() routine.
- * \param[in] format the format of the output lines, using control sequences to
- *                   denote the different cell statistics.
- * \param[in] i the ID of the particle associated with this Voronoi cell.
- * \param[in] (x,y) the position of the particle associated with this Voronoi
- *                    cell.
- * \param[in] r a radius associated with the particle.
- * \param[in] fp the file handle to write to. */
-void voronoicell_base_2d::output_custom(const char *format,int i,double x,double y,double r,FILE *fp) {
-	char *fmp(const_cast<char*>(format));
-	vector<int> vi;
-	vector<double> vd;
-	while(*fmp!=0) {
-		if(*fmp=='%') {
-			fmp++;
-			switch(*fmp) {
-
-				// Particle-related output
-				case 'i': fprintf(fp,"%d",i);break;
-				case 'x': fprintf(fp,"%g",x);break;
-				case 'y': fprintf(fp,"%g",y);break;
-				case 'q': fprintf(fp,"%g %g",x,y);break;
-				case 'r': fprintf(fp,"%g",r);break;
-
-				// Vertex-related output
-				case 'w': fprintf(fp,"%d",p);break;
-				case 'p': output_vertices(fp);break;
-				case 'P': output_vertices(x,y,fp);break;
-				case 'm': fprintf(fp,"%g",0.25*max_radius_squared());break;
-
-				// Edge-related output
-				case 'g': fprintf(fp,"%d",p);break;
-				case 'E': fprintf(fp,"%g",perimeter());break;
-				case 'e': edge_lengths(vd);voro_print_vector(vd,fp);break;
-				case 'l': normals(vd);
-					  voro_print_positions_2d(vd,fp);
-					  break;
-				case 'n': neighbors(vi);
-					  voro_print_vector(vi,fp);
-					  break;
-
-				// Area-related output
-				case 'a': fprintf(fp,"%g",area());break;
-				case 'c': {
-						  double cx,cy;
-						  centroid(cx,cy);
-						  fprintf(fp,"%g %g",cx,cy);
-					  } break;
-				case 'C': {
-						  double cx,cy;
-						  centroid(cx,cy);
-						  fprintf(fp,"%g %g",x+cx,y+cy);
-					  } break;
-
-				// End-of-string reached
-				case 0: fmp--;break;
-
-				// The percent sign is not part of a
-				// control sequence
-				default: putc('%',fp);putc(*fmp,fp);
-			}
-		} else putc(*fmp,fp);
-		fmp++;
-	}
-	fputs("\n",fp);
-}
-
 /** Doubles the storage for the vertices, by reallocating the pts and ed
  * arrays. If the allocation exceeds the absolute maximum set in max_vertices,
  * then the routine exits with a fatal error. */
@@ -479,7 +360,7 @@ void voronoicell_base_2d::add_memory_vertices(vc_class &vc) {
 	current_vertices<<=1;
 	if(current_vertices>max_vertices) voro_fatal_error("Vertex memory allocation exceeded absolute maximum",VOROPP_MEMORY_ERROR);
 #if VOROPP_VERBOSE >=2
-	fprintf(stderr,"Vertex memory scaled up to %d\n",current_vertices);
+//	fprintf(stderr,"Vertex memory scaled up to %d\n",current_vertices);
 #endif
 
 	// Copy the vertex positions
@@ -520,7 +401,7 @@ void voronoicell_base_2d::add_memory_ds(int *&stackp) {
 	current_delete_size<<=1;
 	if(current_delete_size>max_delete_size) voro_fatal_error("Delete stack 1 memory allocation exceeded absolute maximum",VOROPP_MEMORY_ERROR);
 #if VOROPP_VERBOSE >=2
-	fprintf(stderr,"Delete stack 1 memory scaled up to %d\n",current_delete_size);
+//	fprintf(stderr,"Delete stack 1 memory scaled up to %d\n",current_delete_size);
 #endif
 	int *dsn(new int[current_delete_size]),*dsnp(dsn),*dsp(ds);
 	while(dsp<stackp) *(dsnp++)=*(dsp++);

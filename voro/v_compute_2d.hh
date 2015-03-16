@@ -10,7 +10,6 @@
 #ifndef VOROPP_V_COMPUTE_2D_HH
 #define VOROPP_V_COMPUTE_2D_HH
 
-#include <cstdio>
 #include <cstdlib>
 #include <cmath>
 #include <vector>

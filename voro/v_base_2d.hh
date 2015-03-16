@@ -11,7 +11,6 @@
 #define VOROPP_V_BASE_2D_HH
 
 #include "worklist_2d.hh"
-//#include <stdio.h>
 //#include <stdlib.h>
 namespace voro {
 
