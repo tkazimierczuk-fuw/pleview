@@ -236,7 +236,6 @@ IF(WIN32)
           DESTINATION iconengines
      )
 
-
     # Our path for customization of install procedure
     set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/install" ${CMAKE_MODULE_PATH})
 
@@ -259,3 +258,8 @@ IF(WIN32)
 ENDIF(WIN32)
 
 INCLUDE(CPack)
+
+CONFIGURE_FILE(
+  ${pleview_SOURCE_DIR}/install/NSIS.PleviewOptions.ini.in
+  ${CMAKE_CURRENT_BINARY_DIR}/install/NSIS.PleviewOptions.ini
+)
