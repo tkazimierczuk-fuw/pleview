@@ -56,8 +56,6 @@ protected:
     //! Translates mouse coordinate into tile coordinates
     QPointF posToCoordinates(QPoint pos) const;
 
-
-
 private:
     QMatrix scaling;
     VoronoiPlotItem * plotter;

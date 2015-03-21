@@ -102,6 +102,11 @@ ColorMap VoronoiPlotItem::colorMap() const {
 
 
 void VoronoiPlotItem::draw(QPainter *painter) const {
+    if(_drawEdges)
+        painter->setPen(QPen(Qt::gray, 0.));
+    else
+        painter->setPen(Qt::NoPen);
+
     for(int i = 0; i < qMin(_diagram.size(), _values.size()); i++) {
         painter->setBrush(QBrush(_colorMap.color(_values[i])));
         painter->drawPolygon(_diagram[i]);

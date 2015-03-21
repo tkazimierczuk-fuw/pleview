@@ -40,8 +40,6 @@ void SimpleVoronoiWidget::setPoints(QPolygonF poly) {
 
 void SimpleVoronoiWidget::paintEvent(QPaintEvent *event) {
     QPainter painter(this);
-
-    painter.setPen(QPen(Qt::gray, 0.));
     QRectF target =plotter->boundingRect();
     if(target.isEmpty())
         return;
@@ -112,11 +110,20 @@ void SimpleVoronoiWidget::showContextMenu(const QPoint &pos) {
     QAction * colorAction = menu.addAction("Setup color scale");
     QAction * exportAction = menu.addAction("Export to PNG");
 
+
+    QAction * edgesAction = new QAction("Draw edges", &menu);
+    edgesAction->setCheckable(true);
+    edgesAction->setChecked(plotter->drawingEdges());
+    menu.addAction(edgesAction);
+
     QAction* selectedItem = menu.exec(globalPos);
     if (selectedItem == colorAction) {
         setupColorMap();
     } else if (selectedItem == exportAction) {
         exportPng();
+    } else if (selectedItem == edgesAction) {
+        plotter->setDrawingEdges(edgesAction->isChecked());
+        update();
     }
 }
 
