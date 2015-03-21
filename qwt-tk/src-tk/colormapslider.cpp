@@ -7,6 +7,10 @@
 #include <QGridLayout>
 #include <QFormLayout>
 #include <QColorDialog>
+#include <QCheckBox>
+#include <QToolButton>
+#include <QDialog>
+#include <QDialogButtonBox>
 
 #include <iostream>
 #include <limits>
@@ -31,8 +35,7 @@ double ColorMapSlider::mapValue(double value) {
    Mouse press event handler
    \param e Mouse event
 */
-void ColorMapSlider::mousePressEvent(QMouseEvent *e)
-{
+void ColorMapSlider::mousePressEvent(QMouseEvent *e) {
     double pos = mapMouse(e->pos());
     selectStop(pos);
     if(selected < 0)
@@ -202,6 +205,22 @@ ColorMap ColorMapSlider::currentMap() {
     return map2;
 }
 
+
+void ColorMapSlider::setColorMap(const ColorMap &_map) {
+    map.clear();
+    QMap<double, QRgb> tmpMap = _map.rawMap();
+    QMap<double, QRgb>::const_iterator it = tmpMap.begin();
+    while(it != tmpMap.end()) {
+        map.insert(it.key(), it.value());
+        it++;
+    }
+
+    stopWidth = 5;
+    selected = -1;
+    mapChanged();
+}
+
+
 void ColorMapConfig::setupUi() {
     QGridLayout * gridLayout = new QGridLayout(this);
 
@@ -226,9 +245,25 @@ void ColorMapConfig::setupUi() {
     minEdit->setValidator(validator);
     gridLayout->addWidget(maxEdit, 1, 2, 1, 1);
 
-    if(full) {
+    QVBoxLayout * toolButtonLayout = new QVBoxLayout();
+
+    cbAuto = new QCheckBox("Autoscale");
+    cbAuto->setChecked(oryginal.autoscaling());
+    connect(cbAuto, SIGNAL(toggled(bool)), this, SLOT(limitEdited()));
+
+    if(!full) {
+        QPushButton * tbDialog = new QPushButton("Advanced");
+        connect(tbDialog, SIGNAL(clicked()), this, SLOT(displayDialog()));
+        toolButtonLayout->addWidget(tbDialog);
+        toolButtonLayout->addWidget(cbAuto);
+        gridLayout->addLayout(toolButtonLayout, 0, 3, 2, 1);
+    }
+    else { // full == true
+        gridLayout->addWidget(cbAuto, 2, 0, 1, 3);
+        cbAuto->setText("Determine min and max automatically");
+
         group = new QGroupBox("Color stop");
-        gridLayout->addWidget(group, 2, 0, 1, 3);
+        gridLayout->addWidget(group, 3, 0, 1, 3);
         QFormLayout *formLayout = new QFormLayout(group);
 
         buttonStop = new ColorButton();
@@ -255,13 +290,14 @@ void ColorMapConfig::setupUi() {
         connect(percentEdit, SIGNAL(editingFinished()), this, SLOT(percentEdited()));
         connect(valueEdit, SIGNAL(editingFinished()), this, SLOT(valueEdited()));
     }
+
     this->setLayout(gridLayout);
 }
 
 void ColorMapConfig::mapChanged() {
     ColorMap map = currentColorMap();
-    this->buttonMin->setColor(map.color(map.min()));
-    this->buttonMax->setColor(map.color(map.max()));
+    buttonMin->setColor(map.color(map.min()));
+    buttonMax->setColor(map.color(map.max()));
 
     if(full) {
         if(!qIsNaN(slider->selectedStop())) {
@@ -274,8 +310,6 @@ void ColorMapConfig::mapChanged() {
             group->setEnabled(false);
         }
     }
-
-    map.setRange(_min, _max);
     emit colorMapChanged(map);
 }
 
@@ -309,12 +343,20 @@ void ColorMapConfig::stopRemoved() {
 
 
 void ColorMapConfig::limitEdited() {
-    _min = minEdit->text().toDouble();
-    _max = maxEdit->text().toDouble();
-    if(full && group->isEnabled())
-        valueEdit->setText(QString::number(percentToValue(percentEdit->text().toDouble())));
+    bool autoMode = cbAuto->isChecked();
+    minEdit->setDisabled(autoMode);
+    maxEdit->setDisabled(autoMode);
+
     ColorMap map = slider->currentMap();
-    map.setRange(_min, _max);
+    if(autoMode)
+        map.setAutoscaling(true);
+    else {
+        _min = minEdit->text().toDouble();
+        _max = maxEdit->text().toDouble();
+        if(full && group->isEnabled())
+            valueEdit->setText(QString::number(percentToValue(percentEdit->text().toDouble())));
+        map.setRange(_min, _max);
+    }
     emit colorMapChanged(map);
 }
 
@@ -337,6 +379,8 @@ ColorMapConfig::ColorMapConfig(QWidget * parent, const ColorMap &initial, bool f
     connect(minEdit, SIGNAL(editingFinished()), this, SLOT(limitEdited()));
     connect(maxEdit, SIGNAL(editingFinished()), this, SLOT(limitEdited()));
     this->mapChanged();
+
+    limitEdited(); // can set min and max control disabled if autoscaling is checked
 }
 
 void ColorMapConfig::cancel() {
@@ -344,20 +388,48 @@ void ColorMapConfig::cancel() {
 }
 
 void ColorMapConfig::setColorMap(const ColorMap &map) {
-    if (oryginal != map) {
-        oryginal = map;
-        mapChanged();
-    }
+    bool tmp = slider->blockSignals(true);
+    slider->setColorMap(map);
+    slider->blockSignals(tmp);
+    tmp = minEdit->blockSignals(true);
+    minEdit->setText(QString::number(map.min()));
+    minEdit->blockSignals(tmp);
+    tmp = maxEdit->blockSignals(true);
+    maxEdit->setText(QString::number(map.max()));
+    maxEdit->blockSignals(tmp);
+    tmp = cbAuto->blockSignals(true);
+    cbAuto->setChecked(map.autoscaling());
+    cbAuto->blockSignals(tmp);
+    mapChanged();
 }
 
 ColorMap ColorMapConfig::currentColorMap() const {
     ColorMap map = slider->currentMap();
     double vMin = minEdit->text().toDouble();
     double vMax = maxEdit->text().toDouble();
-
-    if(map.max() > vMin) // we need to set limits carefully to avoid inverting the scale
-        map.setMin(vMin);
-    map.setMax(vMax);
-    map.setMin(vMin);
+    map.setRange(vMin, vMax);
+    map.setAutoscaling(cbAuto->isChecked());
     return map;
+}
+
+
+void ColorMapConfig::displayDialog() {
+    QDialog * dialog = new QDialog(this);
+    dialog->setWindowTitle("Configure color scale");
+    QFormLayout * layout = new QFormLayout();
+
+    ColorMapConfig * fullConfig = new ColorMapConfig(this, currentColorMap());
+    layout->addRow(fullConfig);
+
+    QDialogButtonBox * buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal);
+    connect(buttons, SIGNAL(accepted()), dialog, SLOT(accept()));
+    connect(buttons, SIGNAL(rejected()), dialog, SLOT(reject()));
+    layout->addRow(buttons);
+
+    dialog->setLayout(layout);
+
+    if(dialog->exec()) {
+        //setColorMap(fullConfig->currentColorMap());
+    }
+    delete dialog;
 }

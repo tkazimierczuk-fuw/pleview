@@ -6,7 +6,7 @@
 VoronoiPlotItem::VoronoiPlotItem()
 {
     _autoBoundingRect = true;
-    _autorange = true;
+    _drawEdges = true;
     setItemAttribute(AutoScale);
 }
 
@@ -23,6 +23,18 @@ void VoronoiPlotItem::setBoundingRect(QRectF rect)
     itemChanged();
 }
 
+
+bool VoronoiPlotItem::drawingEdges() const {
+    return _drawEdges;
+}
+
+
+void VoronoiPlotItem::setDrawingEdges(bool on) {
+    if(_drawEdges != on) {
+        _drawEdges = on;
+        itemChanged();
+    }
+}
 
 
 void VoronoiPlotItem::setPoints(const QPolygonF &points) {
@@ -45,22 +57,15 @@ QPolygonF VoronoiPlotItem::points() const {
     return _points;
 }
 
+QVector<double> VoronoiPlotItem::values() const {
+    return _values;
+}
 
 
 
-void VoronoiPlotItem::findColorMapLimits()
-{
-    if(!_autorange)
-        return;
 
-    double min = qInf(), max = -qInf();
-
-    foreach(double d, _values) {
-        if(d < min) min = d;
-        if(d > max) max = d;
-    }
-    if(qIsFinite(min) && qIsFinite(max))
-        _colorMap.setRange(min, max);
+void VoronoiPlotItem::findColorMapLimits() {
+    _colorMap.updateLimits(_values);
 }
 
 
@@ -85,7 +90,7 @@ void VoronoiPlotItem::setValues(QVector<double> values) {
 }
 
 
-void VoronoiPlotItem::setColorMap(ColorMap colorMap) {
+void VoronoiPlotItem::setColorMap(const ColorMap &colorMap) {
     _colorMap = colorMap;
     findColorMapLimits();
     itemChanged();
@@ -96,22 +101,7 @@ ColorMap VoronoiPlotItem::colorMap() const {
 }
 
 
-void VoronoiPlotItem::setColorAutoscale(bool on) {
-    _autorange = on;
-    if(on)
-        findColorMapLimits();
-    itemChanged();
-}
-
-bool VoronoiPlotItem::colorAutoscale() const {
-    return _autorange;
-}
-
-
-
 void VoronoiPlotItem::draw(QPainter *painter) const {
-    //painter->setPen(Qt::NoPen);
-
     for(int i = 0; i < qMin(_diagram.size(), _values.size()); i++) {
         painter->setBrush(QBrush(_colorMap.color(_values[i])));
         painter->drawPolygon(_diagram[i]);

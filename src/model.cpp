@@ -190,9 +190,11 @@ void Engine::setData(GridData2D * data) {
 
 
 void Engine::setColorMap(const ColorMap &map) {
-    _colorMap = map;
-    storeXmlSettings(Pleview::settings(), &_colorMap, "colormap");
-    emit(colorMapChanged(map));
+    if(_colorMap != map) {
+        _colorMap = map;
+        storeXmlSettings(Pleview::settings(), &_colorMap, "colormap");
+        emit(colorMapChanged(map));
+    }
 }
 
 

@@ -8,6 +8,7 @@
 #include <QBrush>
 #include <QGroupBox>
 #include <QLineEdit>
+#include <QCheckBox>
 
 #include "colorbutton.h"
 #include "colormap.h"
@@ -36,10 +37,13 @@ public:
         mouseOffset = 0; /* initialization not necessary */
         selected = -1;
     }
+
     virtual ~ColorMapSlider() {}
     QColor selectedColor();
     double selectedStop();
     ColorMap currentMap();
+
+    void setColorMap(const ColorMap &_map);
 
 public slots:
     void addStop(double val, const QColor &color);
@@ -92,9 +96,14 @@ private slots:
     void percentEdited();
     void valueEdited();
     void stopRemoved();
-    void mapChanged();
     void setMinColor(const QColor &color);
     void setMaxColor(const QColor &color);
+
+    //! Displays a dialog with more editing options
+    void displayDialog();
+
+    //! Emits colorMapChanged signal and updates the display of color stops
+    void mapChanged();
 
 signals:
     void colorMapChanged(const ColorMap &);
@@ -107,6 +116,7 @@ private:
     QGroupBox *group;
     ColorButton *buttonStop, *buttonMin, *buttonMax;
     QLineEdit *percentEdit, *valueEdit, *minEdit, *maxEdit;
+    QCheckBox * cbAuto;
     double _min, _max;
     bool full;
 };

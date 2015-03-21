@@ -43,7 +43,8 @@ public:
 
   ColorMap & operator=(const ColorMap &other);
 
-
+  // renders a colorscale to an image file
+  void exportScaleToPng(QString filename);
 
   double valueToFraction(double value) { return (value-d_min)/(d_max-d_min); }
   double fractionToValue(double fraction) { return d_min+(d_max-d_min)*fraction; }
@@ -56,9 +57,17 @@ public:
       return !( (*this) == other );
   }
 
+
+  bool autoscaling() const { return autoscale; }
+  void setAutoscaling(bool on) { autoscale = on; }
+
+  //! Updates scale limits (min, max) if autoscaling is on.
+  void updateLimits(const QVector<double> &values);
+
 private:
   QMap<double, QRgb> d_stops;
   double d_min, d_max;
+  bool autoscale;
 };
 
 #endif

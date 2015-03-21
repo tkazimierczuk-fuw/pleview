@@ -18,17 +18,14 @@ public:
     ~SimpleVoronoiWidget();
 
     //! Set colormap that will be used
-    void setColorMap(const ColorMap &map) {
+    void setColorMap(const ColorMap map) {
+      std::cerr << "limit: " << map.max() <<", autorange: " << (int) map.autoscaling()  << "\n";
       plotter->setColorMap(map); update();
     }
 
     //! Set the grid of points
     void setPoints(QVector<double> xs, QVector<double> ys);
     void setPoints(QPolygonF);
-
-
-    //! Set color scale in a dialog window (called by context menu)
-    void setColorScale();
 
 
 public slots:
@@ -60,9 +57,16 @@ protected:
     QPointF posToCoordinates(QPoint pos) const;
 
 
+
 private:
     QMatrix scaling;
     VoronoiPlotItem * plotter;
+
+    //! Exports current map to png file (called by the context menu)
+    void exportPng();
+
+    //! Set color scale in a dialog window (called by the context menu)
+    void setupColorMap();
 
 };
 

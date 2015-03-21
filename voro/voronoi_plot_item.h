@@ -20,19 +20,19 @@ public:
     QPolygonF points() const;
 
 
+    QVector<double> values() const;
     void setValues(QVector<double> values);
 
-    void setColorMap(ColorMap colorMap);
+    void setColorMap(const ColorMap & colorMap);
     ColorMap colorMap() const;
-
-    void setColorAutoscale(bool on);
-    bool colorAutoscale() const;
 
     void setBoundingRect(QRectF rect);
 
+    bool drawingEdges() const;
+    void setDrawingEdges(bool on);
 
 private:
-    //! If autorange is set then find limits of the color scale
+    //! If colormap autorange is set then find limits of the color scale
     void findColorMapLimits();
 
     //! Calculate a new Voronoi diagram
@@ -45,8 +45,8 @@ private:
     QVector<QPolygonF> _diagram;
     QRectF _boundingRect;
     ColorMap _colorMap;
-    bool _autorange;
     bool _autoBoundingRect;
+    bool _drawEdges;
 };
 
 #endif // VORONOI_PLOT_ITEM_H

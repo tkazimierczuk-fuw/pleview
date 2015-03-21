@@ -399,7 +399,6 @@ QPixmap GridData2D::render(QRectF area, QSize resolution, ColorMap cmap) const {
     int width = resolution.width();
     int height = resolution.height();
 
-
     // This will be the image data
     QVector<QRgb> imdata(width*height);
 

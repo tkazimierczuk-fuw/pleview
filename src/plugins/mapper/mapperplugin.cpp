@@ -5,6 +5,7 @@
 #include "model.h"
 #include "vectorwidget.h"
 #include "vorowrapper.h"
+#include "colormapslider.h"
 
 #ifndef NAN
 #define NAN (qInf() - qInf())
@@ -100,74 +101,109 @@ void SimpleVoronoiWidget::mouseMoveEvent(QMouseEvent *event) {
 }
 
 
+void SimpleVoronoiWidget::showContextMenu(const QPoint &pos) {
 
-//! Set color scale (like manual minimum or maximum)
-void SimpleVoronoiWidget::setColorScale() {
+    if(plotter->boundingRect().isEmpty())
+        return;
+
+    QPoint globalPos = mapToGlobal(pos);
+
+    QMenu menu;
+    QAction * colorAction = menu.addAction("Setup color scale");
+    QAction * exportAction = menu.addAction("Export to PNG");
+
+    QAction* selectedItem = menu.exec(globalPos);
+    if (selectedItem == colorAction) {
+        setupColorMap();
+    } else if (selectedItem == exportAction) {
+        exportPng();
+    }
+}
+
+
+void SimpleVoronoiWidget::setupColorMap() {
     QDialog * dialog = new QDialog(this);
-    dialog->setWindowTitle("Setup color mapping");
+    dialog->setWindowTitle("Configure color scale");
     QFormLayout * layout = new QFormLayout();
 
-    /*ColorMap colormap = plotter->colorMap();
+    ColorMapConfig * fullConfig = new ColorMapConfig(this, plotter->colorMap());
+    layout->addRow(fullConfig);
 
-    QLineEdit * minimumEdit = new QLineEdit();
-    minimumEdit->setValidator(new QDoubleValidator(minimumEdit));
+    QDialogButtonBox * buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal);
+    connect(buttons, SIGNAL(accepted()), dialog, SLOT(accept()));
+    connect(buttons, SIGNAL(rejected()), dialog, SLOT(reject()));
+    layout->addRow(buttons);
 
-    QLineEdit * maximumEdit = new QLineEdit();
-    maximumEdit->setValidator(new QDoubleValidator(maximumEdit));
+    dialog->setLayout(layout);
 
-    QCheckBox * autoMinimumCheckbox = new QCheckBox();
-    autoMinimumCheckbox->setChecked(false);
-    connect(autoMinimumCheckbox, SIGNAL(toggled(bool)), minimumEdit, SLOT(setDisabled(bool)));
-    QCheckBox * autoMaximumCheckbox = new QCheckBox();
-    autoMaximumCheckbox->setChecked(false);
-    connect(autoMaximumCheckbox, SIGNAL(toggled(bool)), maximumEdit, SLOT(setDisabled(bool)));
-
-    layout->addRow("Auto-calculate minimum value", autoMinimumCheckbox);
-    layout->addRow("Minimum value", minimumEdit);
-    layout->addRow("Auto-calculate maximum value", autoMaximumCheckbox);
-    layout->addRow("Maximum value", maximumEdit);
-
-    double min = qInf(), max = -qInf();
-    foreach(double d, _data) {
-        if(d < min) min = d;
-        if(d > max) max = d;
+    if(dialog->exec()) {
+        ColorMap cm = fullConfig->currentColorMap();
+        setColorMap(cm);
     }
-
-    if(qIsFinite(_min))
-        min = _min;
-    else autoMinimumCheckbox->setChecked(true);
-    minimumEdit->setText(QString::number(min));
+    delete dialog;
+}
 
 
-    if(qIsFinite(_max))
-        max = _max;
-    else autoMaximumCheckbox->setChecked(true);
-    maximumEdit->setText(QString::number(max)); */
+void SimpleVoronoiWidget::exportPng() {
+    QRectF rect = plotter->boundingRect();
+    QString filename = QFileDialog::getSaveFileName(this, "Export as PNG", "", "PNG image (*.png)");
+    if(filename.isEmpty())
+        return;
+    if(!filename.endsWith(".png", Qt::CaseInsensitive))
+        filename.append(".png");
 
+    // let's suggest some image resolution to get map
+    const int totalPixels = 900 * 900;
+    double dpi = sqrt(totalPixels / rect.height() / rect.width());
+    QSize res(qCeil(dpi * rect.width()), qCeil(dpi * rect.height()));
 
-    QDialogButtonBox * buttons = new QDialogButtonBox(QDialogButtonBox::Ok| QDialogButtonBox::Cancel);
+    QDialog * dialog = new QDialog(this);
+    dialog->setWindowTitle("Confirm export options");
+    QFormLayout * layout = new QFormLayout();
+
+    QSpinBox *xRes = new QSpinBox(), *yRes = new QSpinBox();
+    xRes->setRange(1, 100000); yRes->setRange(1, 100000);
+    xRes->setValue(res.width()); yRes->setValue(res.height());
+    layout->addRow("width (pixels)", xRes);
+    layout->addRow("height (pixels)", yRes);
+
+    QCheckBox * cbScale = new QCheckBox();
+    cbScale->setChecked(true);
+    layout->addRow("Also export color scale", cbScale);
+
+    QDialogButtonBox * buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
     layout->addRow(buttons);
     connect(buttons, SIGNAL(accepted()), dialog, SLOT(accept()));
     connect(buttons, SIGNAL(rejected()), dialog, SLOT(reject()));
 
     dialog->setLayout(layout);
-    if(dialog->exec() == QDialog::Accepted) {
-/*        if(autoMinimumCheckbox->isChecked())
-            _min = NAN;
-        else
-            _min = minimumEdit->text().toDouble();
-        if(autoMaximumCheckbox->isChecked())
-            _max = NAN;
-        else
-            _max = maximumEdit->text().toDouble();
-        update(); */
+
+    if(!dialog->exec())
+        return;
+    res.setWidth(xRes->value());
+    res.setHeight(yRes->value());
+    bool exportScale = cbScale->isChecked();
+    delete dialog;
+
+    QPixmap pixmap(res);
+    QPainter * painter = new QPainter(&pixmap);
+    painter->scale((double) pixmap.width()/width(), (double) pixmap.height() / height());
+    render(painter);
+    painter->end();
+    delete painter;
+    if(pixmap.save(filename, "PNG"))
+        Pleview::log()->info(QString("MapperPlugin: image exported to %1").arg(filename));
+    else {
+        Pleview::log()->error("MapperPlugin: cannot write to file");
+        return;
     }
+
+    if(!exportScale)
+        return;
+
+    filename.replace(".png", "_scale.png");
+    plotter->colorMap().exportScaleToPng(filename);
 }
-
-void SimpleVoronoiWidget::showContextMenu(const QPoint &pos) {
-
-}
-
 
 
 
@@ -439,11 +475,6 @@ void MapperPluginObject::unserializeFromXml(QXmlStreamReader *reader) {
 
     scanTypeBox->setCurrentIndex((int) path);
     xPointsSpinBox->setValue(nx);
-
-    //double _min = NAN, _max = NAN;
-    //readXmlAttribute(reader, "colorScaleMinimum", &_min);
-    //readXmlAttribute(reader, "colorScaleMaximum", &_max);
-    //image->setColorScale(_min, _max);
 
     QString tagname;
     while(! (tagname = seekChildElement(reader, "data", "xpoints", "ypoints")).isEmpty()) {

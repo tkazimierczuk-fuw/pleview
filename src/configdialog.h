@@ -13,9 +13,6 @@ class ColorDock : public QDockWidget {
 public:
     ColorDock(Engine * engine);
 
-private slots:
-    void execDialog();
-
 private:
     ColorMapConfig * configWidget;
 };

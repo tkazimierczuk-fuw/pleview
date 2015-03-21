@@ -68,6 +68,8 @@ void MapItem::MapRenderThread::setColorMap(const ColorMap &colormap)
     dataAbort = false;
     d_colormap = colormap;
     dataMutex.unlock();
+    if(d_data)
+        d_colormap.updateLimits(d_data->rawData());
     offlineRender();
 }
 
@@ -81,6 +83,7 @@ void MapItem::MapRenderThread::setData(GridData2D * data)
         delete d_data;
     d_data = data->clone();
     dataMutex.unlock();
+    d_colormap.updateLimits(d_data->rawData());
     offlineRender();
 }
 
@@ -93,41 +96,4 @@ QPixmap MapItem::MapRenderThread::render(QRectF area, QSize resultSize) {
     return pixmap;
 }
 
-
-//void MapItem::MapRenderThread::run()
-//{
-//    mutex.lock();
-//    forever {
-//        if (!restart)
-//            condition.wait(&mutex);
-
-//        QImage image(resultSize, QImage::Format_ARGB32);
-//        image.fill(0); // do we need it?
-//        QRectF area = this->area;
-//        QPainter painter;
-//        painter.begin(&image);
-//        painter.scale(resultSize.width() / area.width(),
-//                      resultSize.height() / area.height());
-//        painter.translate(-area.topLeft());
-
-//        restart = false;
-//        abort = false;
-//        mutex.unlock();
-
-//        QPixmap pixmap;
-
-//        if(d_data != 0) {
-//            pixmap = d_data->render(area, resultSize, d_colormap);
-//        }
-
-//        if (halt)
-//            return;
-
-//        mutex.lock();
-//        if(!pixmap.isNull() && !abort) {
-//            emit renderedPixmap(pixmap, area);
-//        }
-//        // mutex stays locked when stepping to the next iteration
-//    }
-//}
 

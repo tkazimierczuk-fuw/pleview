@@ -41,7 +41,7 @@ public:
     QVector<double> xValues() const;
     void setYValues(const QVector<double> &values) { _y = values; dataChanged(); }
     QVector<double> yValues() const;
-    QVector<double> rawData() const { return _values; }
+    const QVector<double> & rawData() const { return _values; }
     inline double valueAtIndex(int nx, int ny) const {
         /* doesn't check boundaries */
         return _values[ny * cols() + nx];

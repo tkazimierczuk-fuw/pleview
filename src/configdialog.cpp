@@ -13,12 +13,6 @@ ColorDock::ColorDock(Engine *engine) {
     configWidget->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
     layout->addWidget(configWidget);
 
-    QToolButton * button = new QToolButton();
-    button->setToolTip("Advanced color scale editing");
-    button->setIcon(QIcon(":/icons/actions/gear.svg"));
-    connect(button, SIGNAL(clicked()), this, SLOT(execDialog()));
-    layout->addWidget(button);
-
     frame->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
     frame->setLayout(layout);
 
@@ -26,27 +20,6 @@ ColorDock::ColorDock(Engine *engine) {
     setWindowTitle("Color scale");
     toggleViewAction()->setIcon(QIcon(":/icons/actions/colormap.png"));
     setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable | QDockWidget::DockWidgetVerticalTitleBar);
-}
-
-
-void ColorDock::execDialog() {
-    QDialog * dialog = new QDialog(this);
-    QFormLayout * layout = new QFormLayout();
-
-    ColorMapConfig * fullConfig = new ColorMapConfig(this, configWidget->currentColorMap());
-    layout->addRow(fullConfig);
-
-    QDialogButtonBox * buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal);
-    connect(buttons, SIGNAL(accepted()), dialog, SLOT(accept()));
-    connect(buttons, SIGNAL(rejected()), dialog, SLOT(reject()));
-    layout->addRow(buttons);
-
-    dialog->setLayout(layout);
-
-    if(dialog->exec()) {
-        emit configWidget->colorMapChanged(fullConfig->currentColorMap());
-    }
-    delete dialog;
 }
 
 
