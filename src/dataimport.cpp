@@ -296,8 +296,7 @@ GridData2D * AsciiMatrixImport::read(QIODevice *device, bool interactive, QWidge
 
     Pleview::log()->info(QString("Flagi: %1").arg(flags));
 
-    QProgressDialog progress("Opening file...", "Cancel",
-                                                   0, device->size(), parent);
+    QProgressDialog progress("Opening file...", "Cancel", 0, device->size(), parent);
     progress.show();
     QVector<double> xs, ys, values;
 
@@ -322,6 +321,8 @@ GridData2D * AsciiMatrixImport::read(QIODevice *device, bool interactive, QWidge
     int lineNumber = 0;
     while(!device->atEnd()) {
         progress.setValue(device->pos());
+        if(lineNumber % 10 == 0)
+            QApplication::processEvents();
         if(progress.wasCanceled()) {
             progress.close();
             return 0;
