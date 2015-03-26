@@ -96,6 +96,7 @@ private:
     QAction *actionAddPlugin, *actionActivePlugins, *actionDataFilters;
     QAction *actionExport, *actionExportImage, *actionExportAscii, *actionExportTwoColumn;
     QAction *actionPrint;
+    QAction *transformAxesAction;
     QList<QAction*> actionImport;
 
     QAction *zoomAction, *moveAction;

@@ -52,6 +52,9 @@ public:
         _values[ny * cols() + nx] = value;
     }
 
+    //! You should call this method after you change the values by setValueAtIndex or similar functions to recalculate the cache
+    void dataChangingFinished();
+
 
     // Returns sum of values in a rectangular slice. Indexes should be valid
     double sumInIndexRange(int firstx, int lastx, int firsty, int lasty);

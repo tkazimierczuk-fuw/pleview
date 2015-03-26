@@ -1,5 +1,7 @@
 #include "datafiltersgui.h"
 
+#include "axistransformation.h"
+
 WidgetView::WidgetView(QItemSelectionModel * selectionModel, QWidget * parent)
     : QScrollArea(parent) {
     connect(selectionModel, SIGNAL(currentChanged(QModelIndex,QModelIndex)), this, SLOT(currentChanged(QModelIndex)));
@@ -161,3 +163,14 @@ void DataFiltersGui::requestImport() {
     emit(importTransform(&file, Engine::Transformations));
     file.close();
 }
+
+
+void DataFiltersGui::displayTrailingAxisTransform() {
+    if(_manager->filters().isEmpty() || _manager->filters().last()->tagname() != AxisTransformation().tagname())
+        _manager->add(new AxisTransformation());
+
+    listWidget->selectionModel()->select(_manager->index(_manager->filters().size()-1),QItemSelectionModel::ClearAndSelect);
+    if(!isVisible())
+        emit finished(0); // will toggle the action which in turn will change the dialog visibility
+}
+

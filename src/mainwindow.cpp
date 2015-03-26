@@ -33,6 +33,8 @@ MainWindow::MainWindow(Engine * model) : engine(model) {
     xsectiondock->hide();
     toolBar->addAction(xsectiondock->toggleViewAction());
 
+    toolBar->addAction(transformAxesAction);
+
 
     for(int direction = 0; direction < 2; direction++) {
         connect(engine, SIGNAL(crossSectionChanged(int,QVector<double>,QVector<double>)),
@@ -222,6 +224,9 @@ void MainWindow::createActions() {
     dataFiltersDialog = new DataFiltersGui(engine->transformManager, this);
     connect(actionDataFilters, SIGNAL(toggled(bool)), dataFiltersDialog, SLOT(setVisible(bool)));
     connect(dataFiltersDialog, SIGNAL(finished(int)), actionDataFilters, SLOT(toggle()));
+
+    transformAxesAction = new QAction(QIcon(":/icons/actions/transform-axes.svg"), "Transform axes", this);
+    connect(transformAxesAction, SIGNAL(triggered()), dataFiltersDialog, SLOT(displayTrailingAxisTransform()));
 
     QActionGroup * selectGroup = new QActionGroup(this);
     selectGroup->setExclusive(true);

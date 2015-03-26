@@ -30,13 +30,15 @@ AxisTransformation::AxisTransformation(QString xformula, QString yformula): Data
 
 
 void AxisTransformation::transform(GridData2D *data, VarDictionary * dict) {
+    if(data->size() == 0)
+        return;
 
     QVector<double> coordinates[2];
     coordinates[0] = data->xValues();
     coordinates[1] = data->yValues();
 
     for(int i = 0; i < 2; i++) {
-        if(!transformEnabled)
+        if(!transformEnabled[i])
             continue;
 
         try {
@@ -62,8 +64,9 @@ QWidget * AxisTransformation::createControlWidget() {
         enableTransformBox[axis]->setChecked(transformEnabled[axis]);
         layout->addRow("Transform " + axisName[axis] + " axis", enableTransformBox[axis]);
 
-        formulaWidget[axis] = new ParserComboWidget(parser+axis);
+        formulaWidget[axis] = new ParserComboWidget(parser + axis);
         formulaWidget[axis]->setMinimumWidth(250);
+        formulaWidget[axis]->setEnabled(transformEnabled[axis]);
         dummy = 0;
 
         QStringList expressions = Pleview::settings()->value(QString("transformations")+Pleview::directionString((Pleview::Direction) axis), QStringList()).toStringList();
@@ -121,8 +124,10 @@ void AxisTransformation::unserializeFromXml(QXmlStreamReader *reader) {
 
         int axisno = (axisname == axisName[0]) ? 0 : 1;
         transformEnabled[axisno] = on;
-        if(enableTransformBox[axisno] != 0)
+        if(enableTransformBox[axisno] != 0) {
             enableTransformBox[axisno]->setChecked(on);
+            formulaWidget[axisno]->setEnabled(on);
+        }
 
         parser[axisno].SetExpr(formula.toStdString());
     }

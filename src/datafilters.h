@@ -45,7 +45,13 @@ Q_DECLARE_INTERFACE(DataFilterFactory, "pleview.DataFilterFactory/0.1");
 
 
 
+class AxisTransformation;
 
+/**
+ * @brief The DataFilterManager class
+ *
+ * First and last tranform are fixed
+ */
 class PLEVIEW_EXPORT DataFilterManager : public QAbstractListModel,
                  public FactoryObjectManager<DataFilter, DataFilterFactory> {
     Q_OBJECT

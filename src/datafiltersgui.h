@@ -36,6 +36,9 @@ class DataFiltersGui : public QDialog
 public:
     DataFiltersGui(DataFilterManager * manager, QWidget *parent = 0);
 
+public slots:
+    void displayTrailingAxisTransform();
+
 private slots:
     void createFilter();
     void apply();

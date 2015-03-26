@@ -136,7 +136,10 @@ ParserComboWidget::ParserComboWidget(mu::Parser * parser) : ParserGenericWidget(
     _exprCombo->setDuplicatesEnabled(true);
     _exprCombo->setEditable(true);
     _exprCombo->setInsertPolicy(QComboBox::NoInsert);
-    _exprCombo->addItem("t");
+    if(parser->GetExpr().length() > 0)
+        _exprCombo->addItem(QString::fromStdString(parser->GetExpr()));
+    else
+        _exprCombo->addItem("t");
     _exprCombo->addItem("t*2");
     _exprCombo->addItem("t*3");
     createInputWidget(_exprCombo);

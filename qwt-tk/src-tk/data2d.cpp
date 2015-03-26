@@ -30,6 +30,21 @@ void findLimits(const QVector<double> &vec, double &minValue, double &maxValue) 
 }
 
 
+void GridData2D::dataChangingFinished() {
+    _cumulative.resize(_values.size());
+    if(_cumulative.size() > 0) {
+        _cumulative[0] = _values[0]; // 0,0
+        for(int i = 1; i < _x.size(); i++) // first row
+            _cumulative[i] = _cumulative[i-1] + _values[i];
+        for(int j = 1; j < _y.size(); j++) // first column
+            _cumulative[j * _x.size()] = _cumulative[(j-1) * _x.size()] + _values[j * _x.size()];
+        for(int i = 1; i < _x.size(); i++)
+            for(int j = 1; j < _y.size(); j++) // the rest
+                _cumulative[i + j * _x.size()] = _cumulative[i + (j-1) * _x.size()] + _cumulative[i-1 + j * _x.size()] - _cumulative[i-1 + (j-1) * _x.size()] + _values[i + j * _x.size()];
+    }
+}
+
+
 void GridData2D::dataChanged() {
     bool alreadySorted = true;
 
@@ -68,17 +83,8 @@ void GridData2D::dataChanged() {
         _values = tmpval;
     }
 
-    _cumulative.resize(_values.size());
-    if(_cumulative.size() > 0) {
-        _cumulative[0] = _values[0]; // 0,0
-        for(int i = 1; i < _x.size(); i++) // first row
-            _cumulative[i] = _cumulative[i-1] + _values[i];
-        for(int j = 1; j < _y.size(); j++) // first column
-            _cumulative[j * _x.size()] = _cumulative[(j-1) * _x.size()] + _values[j * _x.size()];
-        for(int i = 1; i < _x.size(); i++)
-            for(int j = 1; j < _y.size(); j++) // the rest
-                _cumulative[i + j * _x.size()] = _cumulative[i + (j-1) * _x.size()] + _cumulative[i-1 + j * _x.size()] - _cumulative[i-1 + (j-1) * _x.size()] + _values[i + j * _x.size()];
-    }
+    // recalculate the cumulative cache
+    dataChangingFinished();
 
     findLimits(_x, _minX, _maxX);
     findLimits(_y, _minY, _maxY);

@@ -1,4 +1,5 @@
 #include "datafilters.h"
+#include "axistransformation.h"
 
 
 QWidget * DataFilter::controlWidget() {
@@ -20,11 +21,15 @@ DataFilterManager::DataFilterManager() {
 void DataFilterManager::transform(GridData2D *data) {
     QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
     VarDictionary dict;
+
     foreach(DataFilter * filter, _objects) {
         filter->transform(data, &dict);
     }
-    if(!_objects.isEmpty())
-        emit dataChanged(data);
+
+    //if(!_objects.isEmpty())
+
+    data->dataChangingFinished();
+    emit dataChanged(data);
     QApplication::restoreOverrideCursor();
 }
 
