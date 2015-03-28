@@ -20,6 +20,19 @@ public:
             return 0;
         }
     }
+
+
+    double Eval(bool * ok) {
+        if(ok)
+            *ok = true;
+        try {
+            return mu::Parser::Eval();
+        } catch (mu::Parser::exception_type &e) {
+            if(ok)
+                *ok = false;
+            return 0;
+        }
+    }
 };
 
 

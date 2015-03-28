@@ -61,7 +61,7 @@ private:
 
     Type _type;
     DefinitionType _defType;
-    mu::Parser _condition, _variable;
+    SilentParser _condition, _variable;
     QString _varname;
 };
 

@@ -59,6 +59,18 @@ void RangeVariableFilter::transformAverage(GridData2D *data, VarDictionary * dic
     _condition.DefineVar("z", &z);
     _variable.DefineVar("z", &z);
 
+    bool ok;
+    _condition.Eval(&ok);
+    if(!ok) {
+        Pleview::log()->error("DefineVariable: Error by parsing the condition");
+        return;
+    }
+    _variable.Eval(&ok);
+    if(!ok) {
+        Pleview::log()->error("DefineVariable: Error by parsing the expression");
+        return;
+    }
+
     QVector<double> result;
     QVector<int> count;
 
