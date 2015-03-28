@@ -12,11 +12,12 @@ void TransposeFilter::transform(GridData2D *data, VarDictionary * dict) {
     QVector<double> newValues;
     newValues.reserve(data->rows() * data->cols());
 
-    for(int iy = 0; iy < data->rows(); iy++)
-        for(int ix = 0; ix < data->cols(); ix++)
+
+    for(int ix = 0; ix < data->cols(); ix++)
+        for(int iy = 0; iy < data->rows(); iy++)
             newValues.append(data->valueAtIndex(ix, iy));
 
-    *data = GridData2D(data->yValues(), data->xValues(), newValues);
+    *data = GridData2D(data->xValues(), data->yValues(), newValues);
 }
 
 QWidget * TransposeFilter::createControlWidget() {
