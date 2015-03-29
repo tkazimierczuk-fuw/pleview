@@ -58,6 +58,7 @@ void SimulatorPluginObject::prepareUi() {
     layout->addRow(frame);
 
     QPushButton *runButton = new QPushButton("Run simulation");
+    runButton->setDefault(true);
     layout->addRow(runButton);
     connect(runButton, SIGNAL(clicked()),
             this, SLOT(runSimulation()));
