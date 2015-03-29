@@ -9,6 +9,15 @@ QWidget * DataFilter::controlWidget() {
     return _widget;
 }
 
+void DataFilter::setEnabled(bool ok) {
+    _enabled = ok;
+}
+
+bool DataFilter::enabled() const {
+    return _enabled;
+}
+
+
 QWidget * DataFilter::createControlWidget() {
     return new QFrame();
 }
@@ -23,7 +32,8 @@ void DataFilterManager::transform(GridData2D *data) {
     VarDictionary dict;
 
     foreach(DataFilter * filter, _objects) {
-        filter->transform(data, &dict);
+        if(filter->enabled())
+            filter->transform(data, &dict);
     }
 
     //if(!_objects.isEmpty())
@@ -79,10 +89,38 @@ QVariant DataFilterManager::data(const QModelIndex & index, int role) const {
         return filter->name();
     case Qt::UserRole:
         return qVariantFromValue(filter->controlWidget());
+    case Qt::CheckStateRole:
+        return filter->enabled() ? Qt::Checked : Qt::Unchecked;
     default:
         return QVariant();
     }
 }
+
+
+bool DataFilterManager::setData(const QModelIndex &index, const QVariant &value, int role) {
+    DataFilter * filter = _objects.value(index.row());
+    if(!filter)
+        return false;
+
+    if(role == Qt::CheckStateRole) {
+        filter->setEnabled(value.toBool());
+        emit QAbstractListModel::dataChanged(index, index);
+        return true;
+    }
+    else if(role == Qt::EditRole) {
+        filter->setName(value.toString());
+        emit QAbstractListModel::dataChanged(index, index);
+        return true;
+    }
+
+    return false;
+}
+
+
+Qt::ItemFlags DataFilterManager::flags(const QModelIndex &index) const {
+    return Qt::ItemIsSelectable | Qt::ItemIsUserCheckable | Qt::ItemIsEnabled | Qt::ItemIsEditable;
+}
+
 
 int DataFilterManager::rowCount(const QModelIndex & parent) const {
     return parent.isValid() ? 0 : _objects.size();

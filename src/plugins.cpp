@@ -20,9 +20,24 @@ FactoryObject::~FactoryObject() {
     delete _factory;
 }
 
-QString FactoryObject::name() {
-    return _factory->name();
+QString FactoryObject::name() const {
+    if(!_name.isEmpty())
+        return _name;
+    else if(!suggestedName().isEmpty())
+        return suggestedName();
+    else return _factory->name();
 }
+
+
+void FactoryObject::setName(QString newname) {
+    _name = newname;
+}
+
+
+QString FactoryObject::suggestedName() const {
+    return QString();
+}
+
 
 QString FactoryObject::tagname() {
     return _factory->tagname();

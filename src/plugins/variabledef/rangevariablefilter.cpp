@@ -240,7 +240,7 @@ void RangeVariableFilter::changeDefinitionType() {
 }
 
 
-QString RangeVariableFilter::name() {
+QString RangeVariableFilter::suggestedName() const {
     return QString("define ") + _varname;
 }
 

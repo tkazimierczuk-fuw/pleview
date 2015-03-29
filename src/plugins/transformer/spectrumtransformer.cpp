@@ -95,7 +95,7 @@ void SpectrumTransformer::unserializeFromXml(QXmlStreamReader *reader) {
 }
 
 
-QString SpectrumTransformer::name() {
+QString SpectrumTransformer::suggestedName() const {
     return QString("z:= ") + QString::fromStdString(_expression.GetExpr());
 }
 

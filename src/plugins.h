@@ -35,8 +35,10 @@ protected:
     virtual ~FactoryObject();
 
 public:
-    /** Short user-friendly name of the plugin */
-    virtual QString name();
+    /** Short user-friendly name of the plugin. Default behavior is that plugin proposes a name, but the user can change it */
+    virtual QString name() const;
+    virtual QString suggestedName() const;
+    void setName(QString newname);
 
     /**
      * Tagname that will be used to save the object. Must be unique and
@@ -52,6 +54,7 @@ public:
 
 private:
     Factory * _factory;
+    QString _name;
 };
 
 

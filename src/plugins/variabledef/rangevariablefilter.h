@@ -30,7 +30,7 @@ public:
 
     void serializeToXml(QXmlStreamWriter *writer, const QString &tagName) const;
     void unserializeFromXml(QXmlStreamReader *reader);
-    QString name();
+    QString suggestedName() const override;
 
 protected:
     QWidget * createControlWidget();

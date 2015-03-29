@@ -20,15 +20,21 @@ class DataFiltersGui;
 class PLEVIEW_EXPORT DataFilter : public FactoryObject {
 public:
     DataFilter(Factory * factory)
-        : FactoryObject(factory) {}
+        : FactoryObject(factory), _enabled(true) {}
     virtual ~DataFilter() {}
     virtual void transform(GridData2D * data, VarDictionary * dict) = 0;
     QWidget * controlWidget();
+
+    void setEnabled(bool ok);
+    bool enabled() const;
+
+
 
 protected:
     virtual QWidget * createControlWidget();
     friend class DataFiltersGui;
     QPointer<QWidget> _widget;
+    bool _enabled;
 };
 
 
@@ -50,7 +56,6 @@ class AxisTransformation;
 /**
  * @brief The DataFilterManager class
  *
- * First and last tranform are fixed
  */
 class PLEVIEW_EXPORT DataFilterManager : public QAbstractListModel,
                  public FactoryObjectManager<DataFilter, DataFilterFactory> {
@@ -64,6 +69,8 @@ public:
     QList<DataFilter*> filters();
 
     QVariant data ( const QModelIndex & index, int role = Qt::DisplayRole ) const;
+    bool setData(const QModelIndex & index, const QVariant &value, int role = Qt::EditRole);
+    Qt::ItemFlags flags(const QModelIndex & index) const;
     int rowCount (const QModelIndex & parent = QModelIndex()) const;
     void unserializeFromXml(QXmlStreamReader *reader);
 
