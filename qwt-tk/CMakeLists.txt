@@ -13,6 +13,7 @@ FIND_PACKAGE(Qt5Widgets REQUIRED)
 FIND_PACKAGE(Qt5Svg REQUIRED)
 FIND_PACKAGE(Qt5PrintSupport REQUIRED)
 FIND_PACKAGE(Qt5Concurrent REQUIRED)
+FIND_PACKAGE(Qt5Xml REQUIRED)
 
 INCLUDE_DIRECTORIES(${qwt-tk_SOURCE_DIR}/src ${qwt-tk_SOURCE_DIR}/src-tk)
 
@@ -227,4 +228,4 @@ ${QWTTK_SRC_DIR}/xml.cpp
 
 #ADD_EXECUTABLE(qwt-tk ${QWTTK_SRC_DIR}/main.cpp ${QWT_SRCS} ${QWT_MOC_SRCS})
 ADD_LIBRARY(qwt-tk ${QWT_SRCS} ${QWTTK_SRCS} ${QWT_MOC_SRCS})
-TARGET_LINK_LIBRARIES(qwt-tk Qt5::Widgets Qt5::Svg Qt5::PrintSupport Qt5::Concurrent)
+TARGET_LINK_LIBRARIES(qwt-tk Qt5::Widgets Qt5::Svg Qt5::PrintSupport Qt5::Concurrent Qt5::Xml)

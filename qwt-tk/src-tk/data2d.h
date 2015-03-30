@@ -20,7 +20,7 @@
 
 
 
-class QWT_EXPORT GridData2D : public Data {
+class QWT_EXPORT GridData2D : public Data, public Model {
 public:
     GridData2D();
     GridData2D(const QVector<double> &ys, const QVector<double> &xs, const QVector<double> &zs);

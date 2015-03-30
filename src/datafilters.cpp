@@ -127,9 +127,43 @@ int DataFilterManager::rowCount(const QModelIndex & parent) const {
 }
 
 
-void DataFilterManager::unserializeFromXml(QXmlStreamReader *reader) {
+void DataFilterManager::fromXml(const QDomNode &node) {
+    beginResetModel();
     blockSignals(true);
-    FactoryObjectManager<DataFilter, DataFilterFactory>::unserializeFromXml(reader);
+    clear();
+
+    QDomElement child = node.firstChildElement();
+    while(!child.isNull()) {
+      QString tagname = child.tagName();
+      DataFilterFactory * factory = findFactory(tagname);
+      if(factory) {
+          DataFilter * object = factory->instantiate();
+          object->fromXml(child);
+          bool enabled = true;
+          readXmlAttribute(child, "enabled", &enabled);
+          object->setEnabled(enabled);
+          QString name;
+          readXmlAttribute(child, "name", &name);
+          if(!name.isEmpty() && object->name() != name)
+              object->setName(name);
+          this->add(object);
+          delete factory;
+      }
+      child = child.nextSiblingElement();
+    }
+
     blockSignals(false);
     notifyChange();
+    endResetModel();
+}
+
+
+void DataFilterManager::toXml(QDomNode &node) const {
+    foreach(DataFilter * plugin, _objects) {
+        QDomNode child = node.ownerDocument().createElement(plugin->tagname());
+        writeXmlAttribute(child, "enabled", plugin->enabled());
+        writeXmlAttribute(child, "name", plugin->name());
+        plugin->toXml(child);
+        node.appendChild(child);
+    }
 }

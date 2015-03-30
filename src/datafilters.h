@@ -72,7 +72,8 @@ public:
     bool setData(const QModelIndex & index, const QVariant &value, int role = Qt::EditRole);
     Qt::ItemFlags flags(const QModelIndex & index) const;
     int rowCount (const QModelIndex & parent = QModelIndex()) const;
-    void unserializeFromXml(QXmlStreamReader *reader);
+    void fromXml(const QDomNode &node) override;
+    void toXml(QDomNode &node) const override;
 
 public slots:
     void notifyChange() { emit dataFiltersChanged(); }

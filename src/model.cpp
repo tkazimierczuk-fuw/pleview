@@ -225,6 +225,60 @@ void Engine::readXml(QIODevice *device, Contents contents) {
     if(!device->isReadable())
         return; // error
 
+    if(contents == All) {
+        QDomDocument dom;
+        QString errMsg;
+        bool ok = dom.setContent(device, &errMsg);
+        if(!ok) {
+            Pleview::log()->error(QString("Error reading XML: ") + errMsg);
+            return;
+        }
+
+        QDomNode pleviewnode = dom.documentElement().namedItem("pleview");
+        if(pleviewnode.isNull()) {
+            Pleview::log()->warning("No <pleview> tag found in the XML stream");
+            return;
+        }
+
+        QDomNode node;
+
+        node = pleviewnode.namedItem("xAxis");
+        if(!node.isNull())
+            _axisConfig[X].fromXml(node);
+
+        node = pleviewnode.namedItem("yAxis");
+        if(!node.isNull())
+            _axisConfig[Y].fromXml(node);
+
+        node = pleviewnode.namedItem("marker");
+        if(!node.isNull()) {
+            readXmlAttribute(node, "x", &(xsec.n[X]));
+            readXmlAttribute(node, "y", &(xsec.n[Y]));
+        }
+
+        node = pleviewnode.namedItem("data");
+        if(!node.isNull())
+            original->fromXml(node);
+
+        node = pleviewnode.namedItem("colormap");
+        if(!node.isNull()) {
+            _colorMap.fromXml(node);
+            emit colorMapChanged(_colorMap);
+        }
+
+        node = pleviewnode.namedItem("plugins");
+        if(!node.isNull())
+            pluginManager->fromXml(node);
+
+        node = pleviewnode.namedItem("datafilters");
+        if(!node.isNull())
+            transformManager->fromXml(node);
+
+        prepareData();
+        return;
+    }
+
+
     QXmlStreamReader reader(device);
 
     while(!reader.atEnd() && (!reader.isStartElement() || reader.name() != "pleview"))
@@ -319,40 +373,55 @@ void Engine::save(QIODevice * device) {
     writer.setAutoFormatting(true);
     writer.setAutoFormattingIndent(2);
 
+    QDomDocument root;
+    QDomNode pleviewnode;
+
     if(svgRenderer != 0) {
         QBuffer buffer;
         buffer.open(QIODevice::ReadWrite);
         svgRenderer->generateSvg(&buffer);
         buffer.seek(0);
-        translateExceptLastToken(&writer, &buffer);
+        root.setContent(&buffer);
     }
     else {
         QFile file(":/icons/actions/editdelete.svg");
         file.open(QIODevice::ReadOnly);
-        translateExceptLastToken(&writer, &file);
+        root.setContent(&file);
         file.close();
     }
 
-    writer.writeStartElement("pleview");
-    writeXmlAttribute(&writer, "format", 0.1);
+    pleviewnode = root.createElement("pleview");
+    writeXmlAttribute(pleviewnode, "format", PLEVIEW_VERSION);
+    root.documentElement().appendChild(pleviewnode);
 
     //_axisConfig[X].serializeToXml(&writer, "xAxis");
     //_axisConfig[Y].serializeToXml(&writer, "yAxis");
 
-    original->serializeToXml(&writer, "data");
-    _colorMap.serializeToXml(&writer, "colormap");
+    QDomNode node = root.createElement("data");
+    original->toXml(node);
+    pleviewnode.appendChild(node);
 
-    writer.writeStartElement("marker");
-    writeXmlAttribute(&writer, "x", xsec.n[X]);
-    writeXmlAttribute(&writer, "y", xsec.n[Y]);
-    writer.writeEndElement();
+    node = root.createElement("colormap");
+    _colorMap.toXml(node);
+    pleviewnode.appendChild(node);
 
-    pluginManager->serializeToXml(&writer, "plugins");
-    transformManager->serializeToXml(&writer, "datafilters");
+    node = root.createElement("marker");
+    writeXmlAttribute(node, "x", xsec.n[X]);
+    writeXmlAttribute(node, "y", xsec.n[Y]);
+    pleviewnode.appendChild(node);
 
-    writer.writeEndElement(); //   </pleview>
-    writer.writeEndElement(); // </svg>
-    writer.writeEndDocument();
+    node = root.createElement("plugins");
+    pluginManager->toXml(node);
+    pleviewnode.appendChild(node);
+
+    node = root.createElement("datafilters");
+    transformManager->toXml(node);
+    pleviewnode.appendChild(node);
+
+    QTextStream outstream(&compressor);
+    root.save(outstream, 0);
+    outstream.flush();
+
     compressor.close();
 }
 

@@ -5,6 +5,7 @@
 #include <QObject>
 #include <QSet>
 #include <QXmlStreamWriter>
+#include <QDomNode>
 
 void seekEndElement(QXmlStreamReader * reader);
 QString seekChildElement(QXmlStreamReader * reader, const QSet<QString> &children);
@@ -29,6 +30,17 @@ void readXmlChild(QXmlStreamReader * reader, QVector<double> * target);
 
 
 
+void writeXmlAttribute(QDomNode &node, const QString & name, const QString & value);
+void writeXmlAttribute(QDomNode &node, const QString & name, int value);
+void writeXmlAttribute(QDomNode &node, const QString & name, bool value);
+void writeXmlAttribute(QDomNode &node, const QString & name, double value);
+
+bool readXmlAttribute(const QDomNode &node, const QString &name, QString * target);
+bool readXmlAttribute(const QDomNode &node, const QString &name, int * target);
+bool readXmlAttribute(const QDomNode &node, const QString &name, bool * target);
+bool readXmlAttribute(const QDomNode &node, const QString &name, double * target);
+
+
 
 class Model
 {
@@ -37,6 +49,25 @@ public:
     Model();
     virtual ~Model();
 
+
+
+    /**
+      Return an XML node representing this object.
+
+      Due to legacy reasons, default implementation converts SAX-style functions
+      */
+    virtual void toXml(QDomNode &node) const;
+
+    /**
+      Restore properties of the object according to given XML node.
+      Due to legacy reasons, default implementation refers to the SAX-style function.
+      */
+    virtual void fromXml(const QDomNode &node);
+
+
+//    QByteArray uncompressedArray;
+//    QXmlStreamWriter writer(&uncompressedArray);
+//    obj->serializeToXml(&writer, "dummy");
 
     
     /**

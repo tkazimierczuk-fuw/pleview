@@ -1,5 +1,8 @@
 #include "xml.h"
 #include <QTextStream>
+#include <iostream>
+#include <QDomDocument>
+#include <QXmlStreamReader>
 
 
 /**
@@ -180,7 +183,84 @@ void readXmlChild(QXmlStreamReader * reader, QVector<double> * target) {
 }
 
 
+// ------------- DOM version ------------
 
+
+void writeXmlAttribute(QDomNode &node, const QString & name, const QString & value) {
+    node.toElement().setAttribute(name, value);
+}
+
+
+bool readXmlAttribute(const QDomNode &node, const QString &name, QString * destination) {
+    if(!node.toElement().hasAttribute(name))
+        return false;
+
+    *destination = node.toElement().attribute(name);
+    return true;
+}
+
+
+
+void writeXmlAttribute(QDomNode &node, const QString & name, int value) {
+    writeXmlAttribute(node, name, QString::number(value));
+}
+
+
+bool readXmlAttribute(const QDomNode &node, const QString &name, int * destination) {
+    QString str;
+    if(readXmlAttribute(node, name, &str)) {
+        bool ok;
+        /* two steps in case of parse error */
+        int v = str.toInt(&ok);
+        if(!ok)
+            return false;
+        *destination = v;
+        return true;
+    }
+    else return false;
+}
+
+
+void writeXmlAttribute(QDomNode &node, const QString & name, bool value) {
+    writeXmlAttribute(node, name, value ? QString("true") : QString("false"));
+}
+
+
+bool readXmlAttribute(const QDomNode &node, const QString &name, bool * destination) {
+    QString str;
+    if(readXmlAttribute(node, name, &str)) {
+        if(str.toLower() == "true")
+            *destination = true;
+        else if(str.toLower() == "false")
+            *destination = false;
+        return true;
+    }
+    else return false;
+}
+
+
+void writeXmlAttribute(QDomNode &node, const QString & name, double value)
+{
+    writeXmlAttribute(node, name, QString::number(value));
+}
+
+
+bool readXmlAttribute(const QDomNode &node, const QString &name, double * destination) {
+    QString str;
+    if(readXmlAttribute(node, name, &str)) {
+        bool ok;
+        /* two steps in case of parse error */
+        double v = str.toDouble(&ok);
+        if(!ok)
+            return false;
+        *destination = v;
+        return true;
+    }
+    else return false;
+}
+
+
+// --------------------------------------
 
 
 
@@ -222,4 +302,42 @@ void Model::unserializeAttribute(const QXmlStreamAttribute &attribute) {
 
 void Model::unserializeComponent(QXmlStreamReader *reader) {
     seekEndElement(reader);
+}
+
+
+
+void Model::toXml(QDomNode &node) const {
+    QByteArray buffer;
+    QXmlStreamWriter writer(&buffer);
+    serializeToXml(&writer, "dummy");
+    QDomDocument dom;
+    dom.setContent(buffer);
+    QDomNode importedNode =  node.ownerDocument().importNode(dom.documentElement(), true);
+
+    for(int i = 0; i < importedNode.attributes().count(); i++) {
+        QDomAttr attr = importedNode.attributes().item(i).toAttr();
+        node.toElement().setAttribute(attr.name(), attr.value());
+    }
+
+    QDomNode child = importedNode.firstChild();
+    while(!child.isNull()) {
+        node.appendChild(child.cloneNode());
+        child = child.nextSibling();
+    }
+}
+
+
+void Model::fromXml(const QDomNode &node) {
+    QByteArray header("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n");
+    QByteArray buffer;
+    QTextStream stream(&buffer);
+    node.save(stream, 0);
+    stream.flush();
+
+    QByteArray full = header + buffer;
+
+    QXmlStreamReader reader(full);
+    reader.readNext();
+    reader.readNext();
+    unserializeFromXml(&reader);
 }

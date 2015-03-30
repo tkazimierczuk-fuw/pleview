@@ -22,8 +22,6 @@
 int main(int argc, char **argv) {
     QApplication app(argc, argv);
 
-
-
     QString dir = Pleview::settings()->value("path","").toString();
     if(!dir.isEmpty())
         QDir::setCurrent(dir);
