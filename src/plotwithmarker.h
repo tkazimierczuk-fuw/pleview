@@ -41,6 +41,9 @@ protected:
 private slots:
     void midClick(QPointF pos);
 
+    //! Slot is triggered by event of holding down Shift and Ctrl. The argument is the mouse position in coordinates of canvas()
+    void keyMidClick(QPoint pos);
+
 signals:
     void markerMoved(int direction, double pos);
     void selected(bool);

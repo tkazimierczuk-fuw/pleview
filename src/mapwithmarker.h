@@ -32,10 +32,6 @@ public slots:
     void exportImage();
     void generateSvg(QIODevice * device);
 
-protected:
-    void mouseMoveEvent(QMouseEvent * event);
-
-
 private slots:
     void midClick(QPointF pos);
 

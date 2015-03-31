@@ -3,6 +3,38 @@
 #include "qwt_scale_div.h"
 #include "qwt_picker_machine.h"
 
+
+//! A small class that signals the mouse position if Ctrl+Shift is pressed
+class ConditionalMouseFilter : public QObject {
+    Q_OBJECT
+public:
+    bool eventFilter(QObject * object, QEvent * event) override {
+        int keys = 0;
+        switch ( event->type() )  {
+        case QEvent::MouseMove:
+            lastPos = static_cast<QMouseEvent *>(event)->pos();
+            keys = static_cast<QMouseEvent *>(event)->modifiers();
+            break;
+        case QEvent::KeyPress:
+            keys = static_cast<QKeyEvent *>(event)->modifiers();
+            break;
+        }
+        if(keys == (Qt::ControlModifier | Qt::ShiftModifier)) {
+            event->accept();
+            emit mouseMoved(lastPos);
+            return true;
+        }
+        else return false;
+    }
+
+signals:
+    void mouseMoved(QPoint pos);
+
+private:
+    QPoint lastPos;
+};
+
+
 PlotWithMarker::PlotWithMarker(int direction, PlotRangesManager * plotRangesManager) : _direction(direction)
 {
     _selected = false;
@@ -44,6 +76,11 @@ PlotWithMarker::PlotWithMarker(int direction, PlotRangesManager * plotRangesMana
     }
 
     setZoomMode();
+
+    ConditionalMouseFilter * filter = new ConditionalMouseFilter();
+    connect(filter, SIGNAL(mouseMoved(QPoint)), this, SLOT(keyMidClick(QPoint)));
+    canvas()->installEventFilter(filter);
+    canvas()->setMouseTracking(true);
 }
 
 
@@ -110,6 +147,10 @@ void PlotWithMarker::focusInEvent(QFocusEvent * event) {
     this->select(true);
 }
 
+void PlotWithMarker::keyMidClick(QPoint pos) {
+        midClick(QPointF(this->canvasMap(QwtPlot::xBottom).invTransform(pos.x()), 0));
+}
+
 
 void PlotWithMarker::select(bool state) {
     if(state ^ _selected) {
@@ -118,3 +159,5 @@ void PlotWithMarker::select(bool state) {
         update();
     }
 }
+
+#include "plotwithmarker.moc"
