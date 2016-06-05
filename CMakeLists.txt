@@ -2,9 +2,7 @@ PROJECT(pleview)
 
 CMAKE_MINIMUM_REQUIRED (VERSION 3.0)
 
-IF(UNIX)
-SET(CMAKE_CXX_FLAGS "-std=c++11")
-ENDIF(UNIX)
+set(CMAKE_CXX_STANDARD 11)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 SET(CMAKE_AUTOMOC ON)
@@ -19,6 +17,11 @@ FIND_PACKAGE(Qt5PrintSupport REQUIRED)
 FIND_PACKAGE(Qt5Concurrent REQUIRED)
 
 include_directories(${Qt5Widgets_INCLUDE_DIRS})
+include_directories(${Qt5Concurrent_INCLUDE_DIRS})
+include_directories(${Qt5PrintSupport_INCLUDE_DIRS})
+include_directories(${Qt5Svg_INCLUDE_DIRS})
+include_directories(${Qt5Xml_INCLUDE_DIRS})
+
 add_definitions(${Qt5Widgets_DEFINITIONS})
 
 
@@ -29,8 +32,8 @@ include_directories(${Boost_INCLUDE_DIRS})
 
 INCLUDE_DIRECTORIES(
     ${pleview_SOURCE_DIR}/src
-    ${pleview_SOURCE_DIR}/qwt-tk/src
-    ${pleview_SOURCE_DIR}/qwt-tk/src-tk
+    ${pleview_SOURCE_DIR}/qwt4pleview/qwt/src
+    ${pleview_SOURCE_DIR}/qwt4pleview/src
     ${pleview_SOURCE_DIR}/muparser/include
     ${pleview_SOURCE_DIR}/zlib/
     ${pleview_SOURCE_DIR}/src/plugins/
@@ -52,7 +55,7 @@ ${pleview_SOURCE_DIR}/src/plugins/pointpicker
 ${pleview_SOURCE_DIR}/src/plugins/foldfilter
 )
 
-ADD_SUBDIRECTORY(qwt-tk)
+ADD_SUBDIRECTORY(qwt4pleview)
 ADD_SUBDIRECTORY(muparser)
 ADD_SUBDIRECTORY(zlib)
 
@@ -177,7 +180,7 @@ ${pleview_SOURCE_DIR}/src/plugins/zeemanplugin/linleastsq.cpp
 QT5_ADD_RESOURCES( RC_SRCS  ${pleview_SOURCE_DIR}/img/resources.qrc)
 
 ADD_EXECUTABLE(pleview WIN32 ${Pleview_SRCS} ${RC_SRCS} ${pleview_SOURCE_DIR}/img/pleview.rc ${plugin_SRCS})
-TARGET_LINK_LIBRARIES(pleview Qt5::Widgets Qt5::Svg Qt5::PrintSupport Qt5::Concurrent qwt-tk muparser zlib voro)
+TARGET_LINK_LIBRARIES(pleview Qt5::Widgets Qt5::Svg Qt5::PrintSupport Qt5::Concurrent qwt4pleview muparser zlib voro)
 
 
 #ADD_SUBDIRECTORY(src/plugins)

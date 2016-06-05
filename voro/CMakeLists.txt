@@ -1,19 +1,24 @@
 PROJECT(voro)
 
-CMAKE_MINIMUM_REQUIRED (VERSION 2.8.11)
+cmake_minimum_required(VERSION 3.0)
+
+project(qwt4pleview)
+
+set(CMAKE_CXX_STANDARD 11)
+
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+set(CMAKE_AUTOMOC ON)
+
+
+find_package(Qt5Widgets REQUIRED)
+find_package(Qt5Xml REQUIRED)
+
+include_directories(${Qt5Widgets_INCLUDE_DIRS})
+include_directories(${Qt5Xml_INCLUDE_DIRS})
+
 
 OPTION(USEQWT "Include VoronoiItem for QwtPlot" OFF)
 
-
-SET(CMAKE_INCLUDE_CURRENT_DIR ON)
-SET(CMAKE_AUTOMOC ON)
-
-IF(UNIX)
-  SET(CMAKE_CXX_FLAGS "-std=c++11")
-ENDIF(UNIX)
-
-FIND_PACKAGE(Qt5Core REQUIRED)
-FIND_PACKAGE(Qt5Gui REQUIRED)
 
 SET(SRCS_voro
 ${voro_SOURCE_DIR}/common.cc
