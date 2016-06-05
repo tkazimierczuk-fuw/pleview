@@ -133,7 +133,8 @@ void SimpleVoronoiWidget::setupColorMap() {
     dialog->setWindowTitle("Configure color scale");
     QFormLayout * layout = new QFormLayout();
 
-    ColorMapConfig * fullConfig = new ColorMapConfig(this, plotter->colorMap());
+
+    ColorMapConfig * fullConfig = new ColorMapConfig(this, plotter->ptr_colorMap());
     layout->addRow(fullConfig);
 
     QDialogButtonBox * buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal);

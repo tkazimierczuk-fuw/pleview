@@ -7,9 +7,8 @@ ColorDock::ColorDock(Engine *engine) {
     QFrame * frame = new QFrame();
     QHBoxLayout * layout = new QHBoxLayout();
 
-    configWidget = new ColorMapConfig(this, engine->colorMap(), false);
-    connect(configWidget, SIGNAL(colorMapChanged(ColorMap)), engine, SLOT(setColorMap(ColorMap)));
-    connect(engine, SIGNAL(colorMapChanged(ColorMap)), configWidget, SLOT(setColorMap(ColorMap)));
+
+    configWidget = new ColorMapConfig(this, engine->ptr_colorMap(), false);
     configWidget->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
     layout->addWidget(configWidget);
 

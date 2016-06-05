@@ -37,7 +37,7 @@ SET(LIBS_voro Qt5::Core)
 
 #IF(USEQWT)
   SET(SRCS_voro ${SRCS_voro} voronoi_plot_item.cpp)
-  SET(LIBS_voro ${LIBS_voro} qwt-tk)
+  SET(LIBS_voro ${LIBS_voro} qwt4pleview)
   ADD_DEFINITIONS("-DUSEQWT")
 #ENDIF(USEQWT)
 

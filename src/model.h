@@ -2,6 +2,7 @@
 #define Engine_H
 
 #include <QtCore>
+#include <memory>
 
 class Engine;
 
@@ -100,6 +101,9 @@ public:
 
     //! Color map used to plot the map
     ColorMap colorMap() { return _colorMap; }
+
+    //! Direct pointer to the colormap
+    std::shared_ptr<ColorMap> ptr_colorMap() { return std::make_shared<ColorMap>(_colorMap); }
 
     //! Configuration of given axis
     AxisConfiguration axisConfiguration(int direction) const { return _axisConfig[direction]; }

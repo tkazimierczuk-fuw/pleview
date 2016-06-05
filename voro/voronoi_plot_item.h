@@ -1,6 +1,8 @@
 #ifndef VORONOI_PLOT_ITEM_H
 #define VORONOI_PLOT_ITEM_H
 
+#include <memory>
+
 #include "qwt_plot_item.h"
 #include "colormap.h"
 
@@ -25,6 +27,7 @@ public:
 
     void setColorMap(const ColorMap & colorMap);
     ColorMap colorMap() const;
+    std::shared_ptr<ColorMap> ptr_colorMap() { return std::make_shared<ColorMap>(_colorMap); }
 
     void setBoundingRect(QRectF rect);
 
