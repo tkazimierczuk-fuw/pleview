@@ -15,12 +15,15 @@ FIND_PACKAGE(Qt5Widgets REQUIRED)
 FIND_PACKAGE(Qt5Svg REQUIRED)
 FIND_PACKAGE(Qt5PrintSupport REQUIRED)
 FIND_PACKAGE(Qt5Concurrent REQUIRED)
+FIND_PACKAGE(Qt5Xml REQUIRED)
+FIND_PACKAGE(Qt5OpenGL REQUIRED)
 
 include_directories(${Qt5Widgets_INCLUDE_DIRS})
 include_directories(${Qt5Concurrent_INCLUDE_DIRS})
 include_directories(${Qt5PrintSupport_INCLUDE_DIRS})
 include_directories(${Qt5Svg_INCLUDE_DIRS})
 include_directories(${Qt5Xml_INCLUDE_DIRS})
+include_directories(${Qt5OpenGL_INCLUDE_DIRS})
 
 add_definitions(${Qt5Widgets_DEFINITIONS})
 
@@ -214,15 +217,16 @@ GET_TARGET_PROPERTY(QtGui_dll          Qt5::Gui          LOCATION)
 GET_TARGET_PROPERTY(QtWidgets_dll      Qt5::Widgets      LOCATION)
 GET_TARGET_PROPERTY(QtSvg_dll          Qt5::Svg          LOCATION)
 GET_TARGET_PROPERTY(QtPrintSupport_dll Qt5::PrintSupport LOCATION)
-
+GET_TARGET_PROPERTY(QtOpenGL_dll       Qt5::OpenGL       LOCATION)
+GET_TARGET_PROPERTY(QtXml_dll          Qt5::Xml          LOCATION)
 
  
 IF(WIN32)
      INSTALL(FILES
-         ${QtCore_dll} ${QtGui_dll} ${QtWidgets_dll} ${QtSvg_dll} ${QtPrintSupport_dll}
-         ${_qt5Core_install_prefix}/bin/icudt53.dll
-         ${_qt5Core_install_prefix}/bin/icuin53.dll
-         ${_qt5Core_install_prefix}/bin/icuuc53.dll
+         ${QtCore_dll} ${QtGui_dll} ${QtWidgets_dll} ${QtSvg_dll} ${QtPrintSupport_dll} ${QtOpenGL_dll} ${QtXml_dll}
+         ${_qt5Core_install_prefix}/bin/icudt54.dll
+         ${_qt5Core_install_prefix}/bin/icuin54.dll
+         ${_qt5Core_install_prefix}/bin/icuuc54.dll
          DESTINATION .
      )
 
