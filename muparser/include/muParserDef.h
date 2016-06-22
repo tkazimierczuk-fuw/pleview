@@ -59,7 +59,7 @@
   #endif // not defined _T
 #else
   #ifndef _T
-  #define _T
+  #define _T(x) ((char_type*) (x))
   #endif
   
   /** \brief Definition of the basic parser string type. */
