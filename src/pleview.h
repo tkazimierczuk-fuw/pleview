@@ -32,9 +32,9 @@ public:
     static Log * log();
 
 private:
-    static std::auto_ptr<Engine> _engine;
-    static std::auto_ptr<Log> _log;
-    static std::auto_ptr<QSettings> _settings;
+    static std::shared_ptr<Engine> _engine;
+    static std::shared_ptr<Log> _log;
+    static std::shared_ptr<QSettings> _settings;
     static QString _applicationFile;
 };
 

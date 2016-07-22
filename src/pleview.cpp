@@ -1,8 +1,8 @@
 #include "pleview.h"
 
-std::auto_ptr<Engine> Pleview::_engine;
-std::auto_ptr<Log> Pleview::_log;
-std::auto_ptr<QSettings> Pleview::_settings;
+std::shared_ptr<Engine> Pleview::_engine;
+std::shared_ptr<Log> Pleview::_log;
+std::shared_ptr<QSettings> Pleview::_settings;
 
 
 Engine * Pleview::engine() {
