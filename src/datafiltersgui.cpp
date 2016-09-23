@@ -160,7 +160,7 @@ void DataFiltersGui::requestImport() {
         QMessageBox::critical(this, "IO error", "Unable to read file:" + fname);
             return; /* error opening the file */
     }
-    emit(importTransform(&file, Engine::Transformations));
+    //emit(importTransform(&file, Engine::Transformations)); // TODO
     file.close();
 }
 

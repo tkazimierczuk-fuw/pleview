@@ -7,12 +7,12 @@
 
 #include "data.h"
 
-class Data1D : public Data
+class Data1D
 {
 public:
     Data1D();
     Data1D(QVector<double> x, QVector<double> y);
-    ~Data1D();
+    virtual ~Data1D();
 
     void clear();
     void append(double x, double y);

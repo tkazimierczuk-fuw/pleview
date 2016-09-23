@@ -17,7 +17,7 @@ QString AsciiPumpProbeImport::fileDialogFilter() const {
 }
 
 
-GridData2D * AsciiPumpProbeImport::read(QIODevice *device, bool interactive, QWidget *parent) {
+std::unique_ptr<GridData2D> AsciiPumpProbeImport::read(QIODevice *device, bool interactive, QWidget *parent) {
     Pleview::log()->info("Trying to read data using Ascii Pump-probe format");
     // define flags
     int readXs = 1;
@@ -97,5 +97,5 @@ GridData2D * AsciiPumpProbeImport::read(QIODevice *device, bool interactive, QWi
 
     progress.close();
     Pleview::log()->info("Data successfully read using Ascii pump-probe format");
-    return new GridData2D(ys, xs, transposed);
+    return std::unique_ptr<GridData2D>(new GridData2D(ys, xs, transposed));
 }

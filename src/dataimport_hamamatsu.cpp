@@ -14,7 +14,7 @@ QString HamamatsuImgImport::fileDialogFilter() const {
  *
  * We assume little-endian system.
  */
-GridData2D * HamamatsuImgImport::read(QIODevice * device, bool interactive, QWidget * parent) {
+std::unique_ptr<GridData2D> HamamatsuImgImport::read(QIODevice * device, bool interactive, QWidget * parent) {
     Pleview::log()->info("Trying to read data using Hamamatsu IMG format");
 
     if(device->read(2) != "IM") {
@@ -117,5 +117,5 @@ GridData2D * HamamatsuImgImport::read(QIODevice * device, bool interactive, QWid
         Pleview::log()->info("Successfully read Hamamatsu IMG file");
     }
 
-    return new GridData2D(ys, xs, zs);
+    return std::unique_ptr<GridData2D>(new GridData2D(ys, xs, zs));
 }

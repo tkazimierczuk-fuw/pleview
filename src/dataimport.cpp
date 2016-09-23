@@ -16,7 +16,7 @@ QString AsciiMultiFileImport::fileDialogFilter() const {
 }
 
 
-GridData2D * AsciiMultiFileImport::read(QIODevice * device, bool interactive, QWidget *parent) {
+std::unique_ptr<GridData2D> AsciiMultiFileImport::read(QIODevice * device, bool interactive, QWidget *parent) {
     Pleview::log()->info("Trying to read data using MultiFile format");
 
     QMap<double, QString> files;
@@ -41,7 +41,7 @@ GridData2D * AsciiMultiFileImport::read(QIODevice * device, bool interactive, QW
 }
 
 
-GridData2D * AsciiMultiFileImport::read(QMap<double, QString>files, QWidget *parent) {
+std::unique_ptr<GridData2D> AsciiMultiFileImport::read(QMap<double, QString>files, QWidget *parent) {
     QVector<double> xs, ys, zs;
     foreach(double key, files.keys()) {
         ys.append(key);
@@ -70,7 +70,7 @@ GridData2D * AsciiMultiFileImport::read(QMap<double, QString>files, QWidget *par
             zs.append(spectrum->point(i).y());
         }
     }
-    return new GridData2D(ys, xs, zs);
+    return std::unique_ptr<GridData2D>( new GridData2D(ys, xs, zs) );
 }
 
 
@@ -122,7 +122,7 @@ QString AsciiSerialImport::fileDialogFilter() const {
 }
 
 
-GridData2D * AsciiSerialImport::read(QIODevice * device, bool interactive, QWidget *parent) {
+std::unique_ptr<GridData2D> AsciiSerialImport::read(QIODevice * device, bool interactive, QWidget *parent) {
     Pleview::log()->info("Trying to read data using PLE format");
 
     int pixels = 0; // 0 = autodetect repeated x value
@@ -242,7 +242,7 @@ GridData2D * AsciiSerialImport::read(QIODevice * device, bool interactive, QWidg
         values.resize(xs.size() * ys.size());
     }
 
-    return new GridData2D(ys, xs, values);
+    return std::unique_ptr<GridData2D>( new GridData2D(ys, xs, values) );
 }
 
 
@@ -259,7 +259,7 @@ QString AsciiMatrixImport::fileDialogFilter() const {
 }
 
 
-GridData2D * AsciiMatrixImport::read(QIODevice *device, bool interactive, QWidget *parent) {
+std::unique_ptr<GridData2D> AsciiMatrixImport::read(QIODevice *device, bool interactive, QWidget *parent) {
     Pleview::log()->info("Trying to read data using Ascii Matrix format");
     // define flags
     int readXs = 1;
@@ -384,11 +384,12 @@ GridData2D * AsciiMatrixImport::read(QIODevice *device, bool interactive, QWidge
 
     progress.close();
     Pleview::log()->info("Data successfully read using Ascii Matrix format");
-    return new GridData2D(ys, xs, transposed);
+    return std::unique_ptr<GridData2D>( new GridData2D(ys, xs, transposed) );
 }
 
 
 void DataReader::read(Engine *engine, const QString &filename, int formatId, bool interactive) {
+    std::cerr << "###########3Poczatek read\n";
         QFile file(filename);
         QDir::setCurrent(QFileInfo(filename).path());
         QString fileSuffix = QFileInfo(filename).suffix();
@@ -412,22 +413,21 @@ void DataReader::read(Engine *engine, const QString &filename, int formatId, boo
                 continue;
 
             file.seek(0);
-            GridData2D * data2d = format->read(&file, interactive || formatId > 0, 0);
+            std::unique_ptr<GridData2D> data2d = format->read(&file, interactive || formatId > 0, 0);
             if(data2d) {
                 if(data2d->size() > 0) {
-                    engine->setData(data2d);
+                    engine->setData(shared_ptr<GridData2D>(std::move(data2d)));
                     file.close();
                     if(!fileSuffix.isEmpty())
                         Pleview::settings()->setValue("extensions/"+fileSuffix, format->formatId());
                     return;
                 }
-                else
-                    delete data2d;
             }
         }
 
         file.close();
         Pleview::log()->warning("Reading file " + filename + " failed.");
+        std::cerr << "Koniec read\n";
 }
 
 

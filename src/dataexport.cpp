@@ -139,7 +139,7 @@ void DataExport::exportAsciiTwoColumn(QWidget * parent, Engine * engine) {
 
     QTextStream out(&file);
 
-    GridData2D * data = engine->data();
+    std::shared_ptr<const GridData2D> data = engine->data();
     QString separatorString = separatorCombo->itemData(separatorCombo->currentIndex()).toString();
 
     if(directionCombo->currentIndex() == 0) {

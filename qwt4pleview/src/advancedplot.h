@@ -9,7 +9,7 @@
 /**
  * @brief The AdvancedPlot class is QwtPlot + some commonly used features like zoomer.
  *
- * Additional features of AdvancedPlot include:
+ * Added features of AdvancedPlot include:
  * - QwtZoomer
  * - queued replot
  * - dialog windows for axes configuration

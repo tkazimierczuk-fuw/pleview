@@ -25,7 +25,7 @@ public:
 
 public slots:
     void setMarker(int direction, double pos0, double pos1, double pos2);
-    void setData(const GridData2D * data);
+    void setData(const std::shared_ptr<const GridData2D> data);
     void setColor(const ColorMap &colorMap);
     void attachPlugin(PlotAddon * plugin);
     void print();

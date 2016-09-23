@@ -138,7 +138,7 @@ void CompareOther::serializeAttributes(QXmlStreamWriter *writer) const {
 
 void CompareOther::unserializeComponent(QXmlStreamReader *reader) {
     if(reader->name() == "data") {
-        GridData2D * data = new GridData2D();
+        std::shared_ptr<GridData2D> data = std::make_shared<GridData2D>();
         data->unserializeFromXml(reader);
         _other->setData(data);
         _mapItem->setSecondData(_other->data());

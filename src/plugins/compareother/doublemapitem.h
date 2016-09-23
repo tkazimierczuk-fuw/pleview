@@ -12,7 +12,7 @@ protected:
     DoubleMapItem(DoubleMapRenderThread * t);
 
 public:
-    void setSecondData(const GridData2D * data);
+    void setSecondData(std::shared_ptr<const GridData2D> data);
 
     static DoubleMapItem * createDoubleMapItem();
 
@@ -31,12 +31,12 @@ class DoubleMapItem::DoubleMapRenderThread : public MapItem::MapRenderThread {
     Q_OBJECT
 
 public:
-    DoubleMapRenderThread(GridData2D * data = 0);
-    void setSecondData(const GridData2D * data);
+    DoubleMapRenderThread(std::shared_ptr<const GridData2D> data = nullptr);
+    void setSecondData(std::shared_ptr<const GridData2D> data);
     void setColor(int i, const QColor &color);
 
 protected:
-    GridData2D * d_data2;
+    std::shared_ptr<const GridData2D> d_data2;
 
     QRgb _color1, _color2;
 };

@@ -7,12 +7,22 @@
 #include "data2d.h"
 #include "model.h"
 
-class ImportFormat : public QObject{
+/**
+ * @brief The ImportFormat class is an interface for importing grid 2D data
+ */
+class ImportFormat {
 public:
+    //! fileDialogFilter() returns standard extensions for given format
     virtual QString fileDialogFilter() const = 0;
+
+    //! actionName() returns a string like "Import ASCII (two-column)", which will appear in subbmenu "Import data | ..."
     virtual QString actionName() const = 0;
+
+    //! ???
     virtual int formatId() const = 0;
-    virtual GridData2D * read(QIODevice * device, bool interactive = false, QWidget * parent = 0) = 0;
+
+    //! Actual reading function. Returns nullptr if failed.
+    virtual std::unique_ptr<GridData2D> read(QIODevice * device, bool interactive = false, QWidget * parent = 0) = 0;
 };
 
 
@@ -26,31 +36,31 @@ protected:
  */
 class AsciiMultiFileImport : public AsciiImportFormat {
 public:
-    QString fileDialogFilter() const;
-    QString actionName() const;
-    GridData2D * read(QIODevice * device, bool interactive, QWidget * parent);
-    int formatId() const { return 1; }
+    QString fileDialogFilter() const override;
+    QString actionName() const override;
+    std::unique_ptr<GridData2D> read(QIODevice * device, bool interactive, QWidget * parent) override;
+    int formatId() const override { return 1; }
 protected:
     Data1D * readSingleAsciiFile(QIODevice * device);
-    GridData2D * read(QMap<double, QString>files, QWidget *parent);
+    std::unique_ptr<GridData2D> read(QMap<double, QString>files, QWidget *parent);
 };
 
 
 class AsciiSerialImport : public AsciiImportFormat {
 public:
-    QString fileDialogFilter() const;
-    QString actionName() const;
-    GridData2D * read(QIODevice * device, bool interactive, QWidget * parent);
-    int formatId() const { return 2; }
+    QString fileDialogFilter() const override;
+    QString actionName() const override;
+    std::unique_ptr<GridData2D> read(QIODevice * device, bool interactive, QWidget * parent) override;
+    int formatId() const override { return 2; }
 };
 
 
 class AsciiMatrixImport : public AsciiImportFormat {
 public:
-    QString fileDialogFilter() const;
-    QString actionName() const;
-    GridData2D * read(QIODevice * device, bool interactive, QWidget * parent);
-    int formatId() const { return 3; }
+    QString fileDialogFilter() const override;
+    QString actionName() const override;
+    std::unique_ptr<GridData2D> read(QIODevice * device, bool interactive, QWidget * parent) override;
+    int formatId() const override { return 3; }
 };
 
 

@@ -5,7 +5,7 @@
 
 
 MapItem::MapItem(MapRenderThread *thread) {
-    d_data = 0;
+    d_data = nullptr;
     d_radius = 5;
     setItemAttribute(QwtPlotItem::AutoScale);
     if(!thread)
@@ -20,7 +20,7 @@ MapItem::~MapItem() {
 }
 
 QRectF MapItem::boundingRect() const {
-    if(d_data == 0)
+    if(d_data == nullptr)
         return QRectF();
 
     double xmin = d_data->minX();
@@ -31,12 +31,12 @@ QRectF MapItem::boundingRect() const {
 }
 
 
-GridData2D *MapItem::data() {
+std::shared_ptr<const GridData2D> MapItem::data() {
     return d_data;
 }
 
 
-void MapItem::setData(const GridData2D * data) {
+void MapItem::setData(const std::shared_ptr<const GridData2D> data) {
     d_data = data->clone();
     mapThread->setColorMap(d_colormap);
     mapThread->setData(d_data);
@@ -54,8 +54,6 @@ void MapItem::setColorMap(const ColorMap & map) {
 
 
 MapItem::MapRenderThread::~MapRenderThread() {
-    if(d_data != 0)
-        delete d_data;
 }
 
 
@@ -74,13 +72,11 @@ void MapItem::MapRenderThread::setColorMap(const ColorMap &colormap)
 }
 
 
-void MapItem::MapRenderThread::setData(GridData2D * data)
+void MapItem::MapRenderThread::setData(std::shared_ptr<const GridData2D> data)
 {
     dataAbort = true; // tell the thread to pause and release dataMutex
     dataMutex.lock();
     dataAbort = false;
-    if(d_data != 0)
-        delete d_data;
     d_data = data->clone();
     dataMutex.unlock();
     d_colormap.updateLimits(d_data->rawData());

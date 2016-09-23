@@ -16,25 +16,23 @@ void DoubleMapItem::setColor(int i, const QColor &color) {
 }
 
 
-void DoubleMapItem::setSecondData(const GridData2D *data) {
+void DoubleMapItem::setSecondData(std::shared_ptr<const GridData2D> data) {
     static_cast<DoubleMapRenderThread*>(mapThread)->setSecondData(data);
     thread->render(boundingRect(), QSize(200, 200));
     clearCache(); // there is no race condition here as queued slots execute in the same thread
 }
 
 
-DoubleMapItem::DoubleMapRenderThread::DoubleMapRenderThread(GridData2D * data) : MapRenderThread(data), d_data2(0) {
+DoubleMapItem::DoubleMapRenderThread::DoubleMapRenderThread(std::shared_ptr<const GridData2D> data) : MapRenderThread(data), d_data2(nullptr) {
     _color1 = qRgb(255, 55, 0);
     _color2 = qRgb(0, 200, 255);
 }
 
 
-void DoubleMapItem::DoubleMapRenderThread::setSecondData(const GridData2D *data) {
+void DoubleMapItem::DoubleMapRenderThread::setSecondData(std::shared_ptr<const GridData2D> data) {
     dataAbort = true; // tell the thread to pause and release dataMutex
     dataMutex.lock();
     dataAbort = false;
-    if(d_data2 != 0)
-        delete d_data2;
     d_data2 = data->clone();
     dataMutex.unlock();
     offlineRender();

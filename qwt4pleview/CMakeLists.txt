@@ -144,3 +144,5 @@ target_link_libraries(qwt4pleview Qt5::Widgets Qt5::PrintSupport Qt5::Svg Qt5::O
 add_executable(test_colormapslider ${CMAKE_CURRENT_SOURCE_DIR}/examples/test_colormapslider.cpp)
 target_link_libraries(test_colormapslider qwt4pleview  Qt5::Widgets)
 
+add_executable(test_saving_to_xml ${CMAKE_CURRENT_SOURCE_DIR}/examples/test_saving_to_xml.cpp)
+target_link_libraries(test_saving_to_xml qwt4pleview  Qt5::Widgets)

@@ -22,7 +22,7 @@ public:
 
 
   virtual QRectF boundingRect() const override;
-  GridData2D * data();
+  std::shared_ptr<const GridData2D> data();
 
   ColorMap colorMap() { return d_colormap; }
 
@@ -36,14 +36,14 @@ public:
 
 public slots:
   void setColorMap(const ColorMap & map);
-  void setData(const GridData2D * data);
+  void setData(const std::shared_ptr<const GridData2D> data);
 
 signals:
   void colorMapChanged(const ColorMap &colorMap);
 
 protected:
   double d_radius;
-  GridData2D * d_data;
+  std::shared_ptr<const GridData2D> d_data;
   ColorMap d_colormap;
 
   MapRenderThread * mapThread;
@@ -55,9 +55,9 @@ class MapItem::MapRenderThread : public RenderThread {
     Q_OBJECT
 
 public:
-    MapRenderThread(GridData2D * data = 0) : d_data(data) { }
+    MapRenderThread(std::shared_ptr<const GridData2D> data = nullptr) : d_data(data) { }
     ~MapRenderThread();
-    void setData(GridData2D * data);
+    void setData(std::shared_ptr<const GridData2D> data);
 
     QPixmap render(QRectF area, QSize resultSize) override;
 
@@ -66,7 +66,7 @@ public slots:
 
 protected:
   QMutex dataMutex;
-  GridData2D * d_data;
+  std::shared_ptr<const GridData2D> d_data;
   ColorMap d_colormap;
 
   volatile bool dataAbort;

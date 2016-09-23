@@ -64,18 +64,19 @@ void storeXmlSettings(QSettings * settings, Model * obj, const QString & key) {
 
 Engine::Engine()
 {   
+    _colorMap = std::make_shared<ColorMap>();
     svgRenderer = 0;
     plotRangesManager = new PlotRangesManager();
     pluginManager = new PlotAddonManager();
     connect(pluginManager, SIGNAL(addonAdded(PlotAddon*)), this, SLOT(addonAdded(PlotAddon*)));
     transformManager = new DataFilterManager();
     connect(transformManager, SIGNAL(dataFiltersChanged()), this, SLOT(prepareData()));
-    data2d = 0;
+    data2d = nullptr;
 
     xsec.reset();
 
     // start with empty data
-    original = new GridData2D();
+    original = std::make_shared<GridData2D>();
     prepareData();
 
     restoreSettings();
@@ -86,16 +87,11 @@ Engine::~Engine() {
     delete pluginManager;
     delete transformManager;
     delete plotRangesManager;
-
-    if(data2d != 0) {
-        delete data2d;
-        delete original;
-    }
 }
 
 
 void Engine::restoreSettings() {
-    readXmlSettings(Pleview::settings(), &_colorMap, "colormap");
+    // readXmlSettings(Pleview::settings(), _colorMap, "colormap"); TODO
 }
 
 
@@ -157,15 +153,18 @@ void Engine::addonAdded(PlotAddon * addon) {
 }
 
 
-bool Engine::loadData(QIODevice *device, Engine::Contents contents) {
+bool Engine::loadData(QIODevice *device) {
     unsigned char buf[3];
     int ret = device->peek((char*) buf, 2);
     if(ret == 2 && buf[0] == 0x1f && buf[1] == 0x8b) {
         // gzip format detected
-        QtIOCompressor compressor(device);
-        compressor.setStreamFormat(QtIOCompressor::GzipFormat);
-        compressor.open(QIODevice::ReadOnly);
-        readXml(&compressor, contents);
+        QtIOCompressor decompressor(device);
+        decompressor.setStreamFormat(QtIOCompressor::GzipFormat);
+        decompressor.open(QIODevice::ReadOnly);
+
+        PlvzFormat reader;
+        reader.load(&decompressor, *this);
+
         return true;
     }
     else
@@ -173,26 +172,23 @@ bool Engine::loadData(QIODevice *device, Engine::Contents contents) {
 }
 
 
-void Engine::setData(GridData2D * data) {
-    if(data2d != 0)
-        delete data2d;
-
+void Engine::setData(std::shared_ptr<GridData2D> data) {
     data2d = data;
 
-    _colorMap.setRange(data2d->minZ(), data2d->maxZ());
+    _colorMap->setRange(data2d->minZ(), data2d->maxZ());
     original = data2d->clone();
 
     xsec.reset();
-    emit(colorMapChanged(_colorMap));
+    emit(colorMapChanged(*_colorMap));
 
     emitDataChanged();
 }
 
 
 void Engine::setColorMap(const ColorMap &map) {
-    if(_colorMap != map) {
-        _colorMap = map;
-        storeXmlSettings(Pleview::settings(), &_colorMap, "colormap");
+    if(*_colorMap != map) {
+        *_colorMap = map;
+        // storeXmlSettings(Pleview::settings(), &_colorMap, "colormap"); TODO
         emit(colorMapChanged(map));
     }
 }
@@ -221,8 +217,8 @@ void Engine::emitDataChanged() {
 }
 
 
-void Engine::readXml(QIODevice *device, Contents contents) {
-    if(!device->isReadable())
+void Engine::readXml(QIODevice *device) {
+    /*if(!device->isReadable())
         return; // error
 
     if(contents == All) {
@@ -262,8 +258,8 @@ void Engine::readXml(QIODevice *device, Contents contents) {
 
         node = pleviewnode.namedItem("colormap");
         if(!node.isNull()) {
-            _colorMap.fromXml(node);
-            emit colorMapChanged(_colorMap);
+            _colorMap->fromXml(node);
+            emit colorMapChanged(*_colorMap);
         }
 
         node = pleviewnode.namedItem("plugins");
@@ -308,8 +304,8 @@ void Engine::readXml(QIODevice *device, Contents contents) {
             else if (reader.name() == "data" && (contents & ExpData))
                 original->unserializeFromXml(&reader);
             else if (reader.name() == "colormap" && (contents & ExpData)) {
-                _colorMap.unserializeFromXml(&reader);
-                emit(colorMapChanged(_colorMap));
+                _colorMap->unserializeFromXml(&reader);
+                emit(colorMapChanged(*_colorMap));
             }
             else if (reader.name() == "plugins" && (contents & Addons))
                 pluginManager->unserializeFromXml(&reader);
@@ -335,19 +331,17 @@ void Engine::readXml(QIODevice *device, Contents contents) {
     if(reader.hasError())
         Pleview::log()->warning("XML parsing error encountered");
 
-    prepareData();
+    prepareData();*/
 }
 
 
 void Engine::prepareData() {
-    if(data2d != 0)
-        delete data2d;
     data2d = original->clone();
     QVector<double> args = _axisConfig[X].values(original->xValues());
     data2d->setXValues(args);
     args = _axisConfig[Y].values(original->yValues());
     data2d->setYValues(args);
-    transformManager->transform(data2d);
+    // transformManager->transform(data2d); TODO!!!
     emitDataChanged();
 }
 
@@ -369,7 +363,10 @@ void Engine::save(QIODevice * device) {
     compressor.setStreamFormat(QtIOCompressor::GzipFormat);
     compressor.open(QIODevice::WriteOnly);
 
-    QXmlStreamWriter writer(&compressor);
+    PlvzFormat writer;
+    writer.save(&compressor, *this);
+
+    /*QXmlStreamWriter writer(&compressor);
     writer.setAutoFormatting(true);
     writer.setAutoFormattingIndent(2);
 
@@ -402,7 +399,7 @@ void Engine::save(QIODevice * device) {
     pleviewnode.appendChild(node);
 
     node = root.createElement("colormap");
-    _colorMap.toXml(node);
+    _colorMap->toXml(node);
     pleviewnode.appendChild(node);
 
     node = root.createElement("marker");
@@ -421,7 +418,7 @@ void Engine::save(QIODevice * device) {
     QTextStream outstream(&compressor);
     root.save(outstream, 0);
     outstream.flush();
-
+    */
     compressor.close();
 }
 
@@ -498,7 +495,7 @@ void Engine::setCrossSectionWidth(int direction, int pixels) {
 }
 
 
-GridData2D * Engine::data() const {
+shared_ptr<const GridData2D> Engine::data() const {
     return data2d;
 }
 

@@ -1,10 +1,6 @@
 #include "data.h"
 
 
-Data::~Data() {
-}
-
-
 BinarySearchResult BinarySearchResult::search(double value, const QVector<double> &vec) {
     if(vec.isEmpty() || vec.first() == vec.last())
         return 0;

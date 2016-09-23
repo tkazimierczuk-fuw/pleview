@@ -64,7 +64,7 @@ void MapWithMarker::midClick(QPointF pos) {
 }
 
 
-void MapWithMarker::setData(const GridData2D * data) {
+void MapWithMarker::setData(const std::shared_ptr<const GridData2D> data) {
     mapItem->setData(data);
     this->replot();
 }

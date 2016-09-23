@@ -19,11 +19,21 @@
 #include "colormap.h"
 
 
+// This is a stupid workaround to force CMake to run MOC on this file
+class Dummy : public QObject {
+    Q_OBJECT
+};
 
-class QWT_EXPORT GridData2D : public Data, public Model {
+
+class QWT_EXPORT GridData2D : public SaveableModel {
+    P_SAVEABLE_GADGET
 public:
     GridData2D();
     GridData2D(const QVector<double> &ys, const QVector<double> &xs, const QVector<double> &zs);
+
+    Q_PROPERTY(QVector<double> xs READ xValues WRITE setXValues STORED true)
+    Q_PROPERTY(QVector<double> ys READ yValues WRITE setYValues STORED true)
+    Q_PROPERTY(QVector<double> values READ rawData WRITE setRawData STORED true)
 
     double minX() const { return _minX; }
     double minY() const { return _minY; }
@@ -44,6 +54,7 @@ public:
     QVector<double> yValues() const;
 
     const QVector<double> & rawData() const { return _values; }
+    void setRawData(const QVector<double> &values) { _values = values; dataChanged(); }
 
     inline double valueAtIndex(int nx, int ny) const {
         /* doesn't check boundaries */
@@ -64,26 +75,13 @@ public:
 
     double valueAtIndexBounded(int nx, int ny) const;
 
-    double valueAt(double x, double y);
+    double valueAt(double x, double y) const;
 
-    double interpolatedValueAt(double x, double y);
+    double interpolatedValueAt(double x, double y) const;
 
-    virtual GridData2D * clone() const;
+    virtual std::shared_ptr<GridData2D> clone() const;
 
     GridData2D & operator=(const GridData2D &other);
-
-    /**
-     * Pickle all properties to XML stream. Do not write EndElement.
-     */
-    virtual void serializeToXml(QXmlStreamWriter * writer, const QString & tagName = "data") const;
-
-    /**
-     Update properties retrieved from XML stream. The previous
-     token had type StartElement. The function should read
-     all data till its EndElement is read.
-     */
-    virtual void unserializeFromXml(QXmlStreamReader * reader);
-
 
     /**
      * Prepare a graphics (map) of given area with given resolution and color scale.
@@ -106,7 +104,7 @@ private:
 class PleDataReader : public DataReaderInterface
 {
 public:
-    virtual Data * read(QIODevice * device, QWidget *parent = 0);
+    virtual std::unique_ptr<GridData2D> read(QIODevice * device, QWidget *parent = 0) override;
 
 private:
     static bool readLine(QIODevice *device, double *x, double *y, double *value);

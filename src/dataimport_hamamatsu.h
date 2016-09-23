@@ -8,11 +8,11 @@
  */
 class HamamatsuImgImport : public ImportFormat  {
 public:
-    QString fileDialogFilter() const;
+    QString fileDialogFilter() const override;
 
-    QString actionName() const;
+    QString actionName() const override;
 
-    GridData2D * read(QIODevice * device, bool interactive, QWidget * parent);
+    std::unique_ptr<GridData2D> read(QIODevice * device, bool interactive, QWidget * parent) override;
 
     //! Any unique number will do.
     int formatId() const { return 123; }

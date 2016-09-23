@@ -8,9 +8,9 @@
 
 class AsciiPumpProbeImport : public AsciiImportFormat {
 public:
-    QString fileDialogFilter() const;
-    QString actionName() const;
-    GridData2D * read(QIODevice * device, bool interactive, QWidget * parent);
+    QString fileDialogFilter() const override;
+    QString actionName() const override;
+    std::unique_ptr<GridData2D> read(QIODevice * device, bool interactive, QWidget * parent) override;
     int formatId() const { return 9; }
 };
 

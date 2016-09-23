@@ -4,6 +4,7 @@
 #include <QIODevice>
 #include <QWidget>
 #include <iostream>
+#include <memory>
 
 #ifndef INFINITY
 #include <limits>
@@ -47,17 +48,14 @@ private:
 
 
 
-class Data {
-public:
-    virtual ~Data();
-};
+class GridData2D;
 
 
 class DataReaderInterface
 {
 public:
     virtual ~DataReaderInterface() {}
-    virtual Data * read(QIODevice * device, QWidget *parent = 0) = 0;
+    virtual std::unique_ptr<GridData2D> read(QIODevice * device, QWidget *parent = 0) = 0;
 };
 
 

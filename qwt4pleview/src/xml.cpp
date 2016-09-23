@@ -3,6 +3,9 @@
 #include <iostream>
 #include <QDomDocument>
 #include <QXmlStreamReader>
+#include <QColor>
+#include <sstream>
+#include <cstdio>
 
 
 /**
@@ -340,4 +343,84 @@ void Model::fromXml(const QDomNode &node) {
     reader.readNext();
     reader.readNext();
     unserializeFromXml(&reader);
+}
+
+
+
+void PlvzFormat::save(QIODevice * device, const SaveableModel &model) {
+    writer = new QXmlStreamWriter(device);
+    writer->writeStartDocument();
+    writer->writeStartElement("plvz");
+    writer->writeAttribute("version", "0.20");
+    acceptingAttributes = true;
+    model.save(*this);
+    writer->writeEndElement();
+    writer->writeEndDocument();
+}
+
+//! @todo
+void PlvzFormat::load(QIODevice * device, SaveableModel &model) {
+}
+
+//! Set the data of the child node
+void PlvzFormat::addChild(const QString &name, const QVariant &model) {
+
+    if(model.type() == QVariant::Int) {
+        writeAttributeOrTextElement(name, QString::number(model.toInt()));
+    }
+
+    else if(model.type() == QVariant::String) {
+        writeAttributeOrTextElement(name, model.toString());
+    }
+
+    else if(model.type() == QVariant::Double) {
+        writeAttributeOrTextElement(name, exactRepresentation(model.toDouble()));
+    }
+
+    else if(model.type() == QVariant::List) {
+        QString name2 = name;
+        if(name2.endsWith("_array"))
+            name2.chop(6);
+        acceptingAttributes = false;
+        foreach(QVariant v, model.toList())
+            addChild(name2, v);
+    }
+
+    else if(model.type() == QVariant::Color) {
+        QColor c = model.value<QColor>();
+        writeAttributeOrTextElement(name, c.name(c.alphaF()<1 ? QColor::HexArgb : QColor::HexRgb));
+    }
+
+    else  if(model.userType() == userType<pSaveableModel>()) {
+        writer->writeStartElement(name);
+        acceptingAttributes = true;
+        if(auto ptr = model.value<pSaveableModel>())
+            ptr->save(*this);
+        writer->writeEndElement();
+        acceptingAttributes = false;
+    }
+
+    else  if(model.userType() == userType<QVector<double>>()) {
+        writer->writeStartElement(name);
+        auto vec = model.value<QVector<double>>();
+        writer->writeAttribute("size", QString::number(vec.size()));
+        writer->writeAttribute("encoding", "binary64");
+        QByteArray array = QByteArray((char*) vec.data(), vec.size() * sizeof(double));
+        writer->writeCharacters(array.toBase64());
+        writer->writeEndElement();
+        acceptingAttributes = false;
+    }
+}
+
+
+QString PlvzFormat::exactRepresentation(double d) {
+    std::ostringstream ss;
+    ss << std::hexfloat << d;
+    return QString::fromStdString(ss.str());
+}
+
+double PlvzFormat::interpretExactRepresentation(const QString &encoded) {
+    double d = 0;
+    sscanf(encoded.toLatin1().data(), "%lA", &d);
+    return d;
 }
