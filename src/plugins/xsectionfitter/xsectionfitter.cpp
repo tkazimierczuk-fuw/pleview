@@ -289,7 +289,7 @@ void XSectionFitter::unserializeAttribute(const QXmlStreamAttribute &attribute) 
     else if (attribute.name() == "direction") {
         for(int i = 0; i < 2; i++) {
             Pleview::Direction dir = (Pleview::Direction) i;
-            if(attribute.value().compare(Pleview::directionString(dir), Qt::CaseInsensitive))
+            if(attribute.value().compare(QString(Pleview::directionString(dir)), Qt::CaseInsensitive))
                 _direction = dir;
         }
     }

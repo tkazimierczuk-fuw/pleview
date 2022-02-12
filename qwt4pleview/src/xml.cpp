@@ -121,11 +121,11 @@ bool readXmlAttribute(QXmlStreamReader * reader, const QString &name, bool * des
 }
 
 bool readXmlAttribute(const QXmlStreamAttribute &attr, bool * target) {
-    if(attr.value().compare("true", Qt::CaseInsensitive) == 0) { // TODO: check compare(...) method
+    if(attr.value().compare(QString("true"), Qt::CaseInsensitive) == 0) { // TODO: check compare(...) method
         *target = true;
         return true;
     }
-    else if(attr.value().compare("false", Qt::CaseInsensitive) == 0) {
+    else if(attr.value().compare(QString("false"), Qt::CaseInsensitive) == 0) {
         *target = false;
         return true;
     }

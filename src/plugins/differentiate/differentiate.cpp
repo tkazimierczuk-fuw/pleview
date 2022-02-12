@@ -105,9 +105,9 @@ void Differentiate::unserializeFromXml(QXmlStreamReader *reader) {
 
 void Differentiate::unserializeAttribute(const QXmlStreamAttribute &attribute) {
     if(attribute.name() == "direction") {
-        if(attribute.value().compare("vertical",Qt::CaseInsensitive) == 0)
+        if(attribute.value().compare(QString("vertical"),Qt::CaseInsensitive) == 0)
             _direction = 1; // see createControlWidget()
-        else if(attribute.value().compare("horizontal",Qt::CaseInsensitive) == 0)
+        else if(attribute.value().compare(QString("horizontal"),Qt::CaseInsensitive) == 0)
             _direction = 0;
 
         if(_directioncombo)

@@ -76,7 +76,7 @@ void Variable::unserializeAttribute(const QXmlStreamAttribute &attribute) {
             typeString = None;
     }
     else if(attribute.name() == "fixed") {
-        if(attribute.value().compare("true", Qt::CaseInsensitive) == 0)
+        if(attribute.value().compare(QString("true"), Qt::CaseInsensitive) == 0)
             fixed = true;
     }
     else if (attribute.name() == "name") {
