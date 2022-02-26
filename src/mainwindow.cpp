@@ -61,8 +61,8 @@ MainWindow::MainWindow(Engine * model) : engine(model) {
     engine->setSvgRenderer(mapPlot);
     connect(engine, SIGNAL(crossSectionChanged(int,double,double,double)), mapPlot, SLOT(setMarker(int,double,double,double)));
     connect(mapPlot, SIGNAL(markerMoved(int,double)), engine, SLOT(setCrossSection(int,double)));
-    connect(engine, SIGNAL(dataChanged(const GridData2D *)), mapPlot, SLOT(setData(const GridData2D*)));
-    connect(engine->transformManager, SIGNAL(dataChanged(const GridData2D*)), mapPlot, SLOT(setData(const GridData2D*)));
+    connect(engine, SIGNAL(dataChanged(std::shared_ptr<const GridData2D>)), mapPlot, SLOT(setData(std::shared_ptr<const GridData2D>)));
+    connect(engine->transformManager, SIGNAL(dataChanged(std::shared_ptr<const GridData2D> data)), mapPlot, SLOT(setData(std::shared_ptr<const GridData2D> data)));
     connect(engine, SIGNAL(colorMapChanged(ColorMap)), mapPlot, SLOT(setColor(ColorMap)));
     connect(engine->pluginManager, SIGNAL(addonAdded(PlotAddon*)), mapPlot, SLOT(attachPlugin(PlotAddon*)));
 
