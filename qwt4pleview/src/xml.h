@@ -156,7 +156,7 @@ public:
     virtual void addChild(const QString &name, const QVariant &model) {}
 
     /** Retrieve the data of the child node */
-    virtual QVariant getChild(const QString &name, QVariant::Type type, int usertype = 0) {}
+    virtual QVariant getChild(const QString &name, QVariant::Type type, int usertype = 0) { return QVariant(); }
 
     /** Retrieve the data of the child node enforcing interpretation as a list */
     virtual QList<QVariant> getChildAsList(const QString &name, QVariant::Type type, int usertype = 0) {
