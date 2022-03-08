@@ -3,6 +3,7 @@
 
 #include <QtCore>
 #include <memory>
+
 using std::shared_ptr;
 
 class Engine;
@@ -75,15 +76,14 @@ class DataFilterManager;
   * (in a sense that it contains all saveable information) and gui-agnostic.
   *
   */
-class PLEVIEW_EXPORT Engine : public PropertyModel
+class PLEVIEW_EXPORT Engine : public QObject
 {
     Q_OBJECT
 
-    Q_PROPERTY(ColorMap colormap READ colorMap WRITE setColorMap STORED true)
-    Q_PROPERTY(GridData2D data READ originalData WRITE setOriginalData STORED true)
-
 public:
-    enum Direction {X = 0, Y = 1}; // compatible with Pleview::Direction
+    enum Contents {ExpData = 1, Transformations = 2, Addons = 4, All = 7};
+
+    enum Direction {X = 0, Y = 1}; // compatible to Pleview::Direction
 
     //! Constructor
     Engine();
@@ -98,14 +98,14 @@ public:
       * and update the copy via dataChanged() signal */
     shared_ptr<const GridData2D> data() const;
 
-    /** Set underlying data. */
+    /** Set underlying data. Model takes the ownership of passed pointer */
     void setData(shared_ptr<GridData2D> data);
 
     //! Color map used to plot the map
-    ColorMap colorMap() { return *_colorMap; }
+    ColorMap colorMap() { return _colorMap; }
 
     //! Direct pointer to the colormap
-    std::shared_ptr<ColorMap> ptr_colorMap() { return _colorMap; }
+    std::shared_ptr<ColorMap> ptr_colorMap() { return std::make_shared<ColorMap>(_colorMap); }
 
     //! Configuration of given axis
     AxisConfiguration axisConfiguration(int direction) const { return _axisConfig[direction]; }
@@ -132,7 +132,7 @@ public:
     void save(QIODevice * device);
 
     //! Parse XML from device. Parameter contents specifies sections to be imported.
-    void readXml(QIODevice * device);
+    void readXml(QIODevice * device, Contents contents = All);
 
 
     PlotAddonManager * pluginManager;
@@ -147,7 +147,7 @@ public slots:
     void setCrossSection(int direction, double pos, bool forceSignal = false);
     void setCrossSectionWidth(int direction, int pixels);
     void setAxisConfiguration(int direction, const AxisConfiguration & axisConfig);
-    bool loadData(QIODevice * device);
+    bool loadData(QIODevice * device, Engine::Contents contents = All);
 
 private:
     void emitCrossSectionChanged(Direction direction);
@@ -166,17 +166,11 @@ signals:
     void crossSectionChanged(int direction, const QVector<double> &x, const QVector<double> &y);
     void colorMapChanged(const ColorMap &colorMap);
 
-
-private:
-    GridData2D & originalData() const { return *original; } // for saving framework
-    void setOriginalData(const GridData2D &d) { original = d.clone(); } // for saving framework
-
-
 private:
     AxisConfiguration _axisConfig[2];
     CrossSection xsec;
     std::shared_ptr<GridData2D> data2d, original;
-    std::shared_ptr<ColorMap> _colorMap;
+    ColorMap _colorMap;
     SvgRenderer * svgRenderer;
 };
 

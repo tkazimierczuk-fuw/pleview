@@ -321,7 +321,6 @@ void MainWindow::open(QString fname) {
 
 
 void MainWindow::import(int formatId) {
-    std::cerr << "\n\n\n##################\n\n\n";
     QString filters;
     foreach(QSharedPointer<ImportFormat> format, DataReader::formats()) {
         if(format->formatId() == formatId)

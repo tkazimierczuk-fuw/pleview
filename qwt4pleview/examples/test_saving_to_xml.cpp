@@ -8,7 +8,8 @@ int main() {
     QFile f("save.test");
 
     f.open(QIODevice::WriteOnly);
-    PlvzFormat().save(&f, m);
+    /*
+     PlvzFormat().save(&f, m);
     f.close();
 
 
@@ -19,6 +20,6 @@ int main() {
     //out << "0/0  = " << PlvzFormat().exactRepresentation(0./0) << " = " <<  PlvzFormat::interpretExactRepresentation(PlvzFormat::exactRepresentation(0./0)) << "\n";
     //out << "1/0  = " << PlvzFormat().exactRepresentation(1./0) << " = " <<  PlvzFormat::interpretExactRepresentation(PlvzFormat::exactRepresentation(1./0)) << "\n";
     out << "\n\n\n";
-
+    */
     return 0;
 }

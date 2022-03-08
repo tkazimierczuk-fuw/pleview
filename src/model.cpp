@@ -64,7 +64,6 @@ void storeXmlSettings(QSettings * settings, Model * obj, const QString & key) {
 
 Engine::Engine()
 {   
-    _colorMap = std::make_shared<ColorMap>();
     svgRenderer = 0;
     plotRangesManager = new PlotRangesManager();
     pluginManager = new PlotAddonManager();
@@ -91,7 +90,7 @@ Engine::~Engine() {
 
 
 void Engine::restoreSettings() {
-    // readXmlSettings(Pleview::settings(), _colorMap, "colormap"); TODO
+    readXmlSettings(Pleview::settings(), &_colorMap, "colormap");
 }
 
 
@@ -153,18 +152,15 @@ void Engine::addonAdded(PlotAddon * addon) {
 }
 
 
-bool Engine::loadData(QIODevice *device) {
+bool Engine::loadData(QIODevice *device, Engine::Contents contents) {
     unsigned char buf[3];
     int ret = device->peek((char*) buf, 2);
     if(ret == 2 && buf[0] == 0x1f && buf[1] == 0x8b) {
         // gzip format detected
-        QtIOCompressor decompressor(device);
-        decompressor.setStreamFormat(QtIOCompressor::GzipFormat);
-        decompressor.open(QIODevice::ReadOnly);
-
-        PlvzFormat reader;
-        reader.load(&decompressor, *this);
-
+        QtIOCompressor compressor(device);
+        compressor.setStreamFormat(QtIOCompressor::GzipFormat);
+        compressor.open(QIODevice::ReadOnly);
+        readXml(&compressor, contents);
         return true;
     }
     else
@@ -175,20 +171,20 @@ bool Engine::loadData(QIODevice *device) {
 void Engine::setData(std::shared_ptr<GridData2D> data) {
     data2d = data;
 
-    _colorMap->setRange(data2d->minZ(), data2d->maxZ());
+    _colorMap.setRange(data2d->minZ(), data2d->maxZ());
     original = data2d->clone();
 
     xsec.reset();
-    emit(colorMapChanged(*_colorMap));
+    emit(colorMapChanged(_colorMap));
 
     emitDataChanged();
 }
 
 
 void Engine::setColorMap(const ColorMap &map) {
-    if(*_colorMap != map) {
-        *_colorMap = map;
-        // storeXmlSettings(Pleview::settings(), &_colorMap, "colormap"); TODO
+    if(_colorMap != map) {
+        _colorMap = map;
+        storeXmlSettings(Pleview::settings(), &_colorMap, "colormap");
         emit(colorMapChanged(map));
     }
 }
@@ -217,8 +213,8 @@ void Engine::emitDataChanged() {
 }
 
 
-void Engine::readXml(QIODevice *device) {
-    /*if(!device->isReadable())
+void Engine::readXml(QIODevice *device, Contents contents) {
+    if(!device->isReadable())
         return; // error
 
     if(contents == All) {
@@ -258,8 +254,8 @@ void Engine::readXml(QIODevice *device) {
 
         node = pleviewnode.namedItem("colormap");
         if(!node.isNull()) {
-            _colorMap->fromXml(node);
-            emit colorMapChanged(*_colorMap);
+            _colorMap.fromXml(node);
+            emit colorMapChanged(_colorMap);
         }
 
         node = pleviewnode.namedItem("plugins");
@@ -304,8 +300,8 @@ void Engine::readXml(QIODevice *device) {
             else if (reader.name() == "data" && (contents & ExpData))
                 original->unserializeFromXml(&reader);
             else if (reader.name() == "colormap" && (contents & ExpData)) {
-                _colorMap->unserializeFromXml(&reader);
-                emit(colorMapChanged(*_colorMap));
+                _colorMap.unserializeFromXml(&reader);
+                emit(colorMapChanged(_colorMap));
             }
             else if (reader.name() == "plugins" && (contents & Addons))
                 pluginManager->unserializeFromXml(&reader);
@@ -331,7 +327,7 @@ void Engine::readXml(QIODevice *device) {
     if(reader.hasError())
         Pleview::log()->warning("XML parsing error encountered");
 
-    prepareData();*/
+    prepareData();
 }
 
 
@@ -341,7 +337,7 @@ void Engine::prepareData() {
     data2d->setXValues(args);
     args = _axisConfig[Y].values(original->yValues());
     data2d->setYValues(args);
-    // transformManager->transform(data2d); TODO!!!
+    // transformManager->transform(data2d); // TODO!!!
     emitDataChanged();
 }
 
@@ -363,10 +359,7 @@ void Engine::save(QIODevice * device) {
     compressor.setStreamFormat(QtIOCompressor::GzipFormat);
     compressor.open(QIODevice::WriteOnly);
 
-    PlvzFormat writer;
-    writer.save(&compressor, *this);
-
-    /*QXmlStreamWriter writer(&compressor);
+    QXmlStreamWriter writer(&compressor);
     writer.setAutoFormatting(true);
     writer.setAutoFormattingIndent(2);
 
@@ -399,7 +392,7 @@ void Engine::save(QIODevice * device) {
     pleviewnode.appendChild(node);
 
     node = root.createElement("colormap");
-    _colorMap->toXml(node);
+    _colorMap.toXml(node);
     pleviewnode.appendChild(node);
 
     node = root.createElement("marker");
@@ -418,7 +411,7 @@ void Engine::save(QIODevice * device) {
     QTextStream outstream(&compressor);
     root.save(outstream, 0);
     outstream.flush();
-    */
+
     compressor.close();
 }
 

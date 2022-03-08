@@ -57,7 +57,7 @@ class MapItem::MapRenderThread : public RenderThread {
 public:
     MapRenderThread(std::shared_ptr<const GridData2D> data = nullptr) : d_data(data) { }
     ~MapRenderThread();
-    void setData(std::shared_ptr<const GridData2D> data);
+    void setData(std::shared_ptr<const GridData2D> data = nullptr);
 
     QPixmap render(QRectF area, QSize resultSize) override;
 

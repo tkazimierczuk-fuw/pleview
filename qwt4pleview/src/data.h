@@ -47,9 +47,7 @@ private:
 
 
 
-
 class GridData2D;
-
 
 class DataReaderInterface
 {
@@ -102,6 +100,9 @@ protected:
     double _f;
 };
 
+
+#include "data1d.h"
+#include "data2d.h"
 
 
 #endif // DATA_H

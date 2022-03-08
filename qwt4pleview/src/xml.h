@@ -6,9 +6,6 @@
 #include <QSet>
 #include <QXmlStreamWriter>
 #include <QDomNode>
-#include <QMetaProperty>
-#include <QSharedPointer>
-#include <QVector>
 
 void seekEndElement(QXmlStreamReader * reader);
 QString seekChildElement(QXmlStreamReader * reader, const QSet<QString> &children);
@@ -42,14 +39,6 @@ bool readXmlAttribute(const QDomNode &node, const QString &name, QString * targe
 bool readXmlAttribute(const QDomNode &node, const QString &name, int * target);
 bool readXmlAttribute(const QDomNode &node, const QString &name, bool * target);
 bool readXmlAttribute(const QDomNode &node, const QString &name, double * target);
-
-
-template <typename Type> int userType() {
-    static int type = 0;
-    if(!type)
-        type = qRegisterMetaType<Type>();
-    return type;
-}
 
 
 
@@ -129,152 +118,6 @@ public:
       */
     virtual void unserializeComponent(QXmlStreamReader * reader);
 
-};
-
-class SaveableModel;
-
-/**
- * @brief The Saver class is a prototype for saving the Pleview data in various formats
- *
- * To some extent, the saving process follows a visitor pattern. In order to save an
- * object inheriting SaveableModel interface, the Saver calls object's save(Saver &) method
- * passing a referance to the saver itself. The object is supposed to call back the methods
- * setData(...) and/or addChild(...) of the particular Saver.
- *
- * The Saver declares several overloaded addChild(...) methods, which are supposed to be implemented
- * in the subclasses.
- */
-class SaveFormat {
-public:
-    virtual void save(QIODevice * device, const SaveableModel &model) {
-    }
-
-    virtual void load(QIODevice * device, SaveableModel &model) {
-    }
-
-    //! Set the data of the child node
-    virtual void addChild(const QString &name, const QVariant &model) {}
-
-    /** Retrieve the data of the child node */
-    virtual QVariant getChild(const QString &name, QVariant::Type type, int usertype = 0) { return QVariant(); }
-
-    /** Retrieve the data of the child node enforcing interpretation as a list */
-    virtual QList<QVariant> getChildAsList(const QString &name, QVariant::Type type, int usertype = 0) {
-        QVariant v = getChild(name, type, usertype);
-        if(v.type() == QVariant::List)
-            return v.toList();
-        else if(v.isNull())
-            return QList<QVariant>();
-        else
-            return QList<QVariant>( {v} );
-    }
-
-    /** Retrieve the data of the child node enforcing it NOT to be interpreted as a list.
-     *  If the getChild would return a QVariant of List type, then we pick its last element */
-    virtual QVariant getChildAsSingle(const QString &name, QVariant::Type type, int usertype = 0) {
-        QVariant v = getChild(name, type, usertype);
-        if(v.type() != QVariant::List)
-            return v;
-        else {
-            QVariantList list = v.toList();
-            if(list.isEmpty())
-                return QVariant();
-            else
-                return list.last();
-        }
-    }
-};
-
-
-class SaveableModel : public Model {
-public:
-    virtual void save(SaveFormat &saver) const {}
-
-    virtual void load(SaveFormat &saver) {}
-};
-
-typedef QSharedPointer<SaveableModel> pSaveableModel;
-Q_DECLARE_METATYPE(pSaveableModel)
-
-#define P_SAVEABLE_GADGET Q_GADGET \
-public: \
-    virtual void save(SaveFormat &saver) const override { \
-        for(int propertyIndex=0; propertyIndex < staticMetaObject.propertyCount(); propertyIndex++) { \
-            auto property = staticMetaObject.property(propertyIndex); \
-            if(property.isStored() && property.name() != QString("objectName")) \
-                saver.addChild(property.name(), property.readOnGadget(this)); \
-        } \
-    } \
-    virtual void load(SaveFormat &saver) override { \
-        for(int propertyIndex=0; propertyIndex < staticMetaObject.propertyCount(); propertyIndex++) { \
-            auto property = staticMetaObject.property(propertyIndex); \
-            if(property.isStored()) { \
-                auto readValue = saver.getChild(property.name(), property.type(), property.userType()); \
-                auto convertedValue = readValue.convert(property.type()); \
-                property.writeOnGadget(this, convertedValue); \
-            } \
-        } \
-    }
-//end of P_SAVEABLE_GADGET macro
-
-class PropertyModel : public QObject, public SaveableModel {
-    Q_OBJECT
-
-public:
-    virtual void save(SaveFormat &saver) const override {
-        for(int propertyIndex=0; propertyIndex < this->metaObject()->propertyCount(); propertyIndex++) {
-            auto property = metaObject()->property(propertyIndex);
-            if(property.isStored() && property.name() != QString("objectName"))
-                saver.addChild(property.name(), property.read(this));
-        }
-    }
-
-    virtual void load(SaveFormat &saver) override {
-        for(int propertyIndex=0; propertyIndex < this->metaObject()->propertyCount(); propertyIndex++) {
-            auto property = metaObject()->property(propertyIndex);
-            if(property.isStored()) {
-                auto readValue = saver.getChild(property.name(), property.type(), property.userType());
-                auto convertedValue = readValue.convert(property.type());
-                property.write(this, convertedValue);
-            }
-        }
-    }
-};
-
-
-
-
-class PlvzFormat : public SaveFormat {
-public:
-    PlvzFormat() : reader(nullptr), writer(nullptr) {
-    }
-
-    virtual void save(QIODevice * device, const SaveableModel &model) override;
-
-    //! @todo
-    virtual void load(QIODevice * device, SaveableModel &model) override;
-
-    //! Set the data of the child node
-    virtual void addChild(const QString &name, const QVariant &model) override;
-
-    static QString exactRepresentation(double d);
-
-    static double interpretExactRepresentation(const QString &encoded);
-
-
-private:
-    QXmlStreamReader * reader;
-    QXmlStreamWriter * writer;
-    bool acceptingAttributes;   // true if we could call writer->writeAttribute, i.e. the last token was StartElement
-
-    void writeAttributeOrTextElement(const QString &name, const QString &value) {
-        if(acceptingAttributes)
-            writer->writeAttribute(name, value);
-        else {
-            writer->writeTextElement(name, value);
-            acceptingAttributes = false;
-        }
-    }
 };
 
 #endif

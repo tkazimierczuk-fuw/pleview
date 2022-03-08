@@ -389,7 +389,6 @@ std::unique_ptr<GridData2D> AsciiMatrixImport::read(QIODevice *device, bool inte
 
 
 void DataReader::read(Engine *engine, const QString &filename, int formatId, bool interactive) {
-    std::cerr << "###########3Poczatek read\n";
         QFile file(filename);
         QDir::setCurrent(QFileInfo(filename).path());
         QString fileSuffix = QFileInfo(filename).suffix();
@@ -416,7 +415,7 @@ void DataReader::read(Engine *engine, const QString &filename, int formatId, boo
             std::unique_ptr<GridData2D> data2d = format->read(&file, interactive || formatId > 0, 0);
             if(data2d) {
                 if(data2d->size() > 0) {
-                    engine->setData(shared_ptr<GridData2D>(std::move(data2d)));
+                    engine->setData(std::shared_ptr<GridData2D>(std::move(data2d)));
                     file.close();
                     if(!fileSuffix.isEmpty())
                         Pleview::settings()->setValue("extensions/"+fileSuffix, format->formatId());
@@ -427,7 +426,6 @@ void DataReader::read(Engine *engine, const QString &filename, int formatId, boo
 
         file.close();
         Pleview::log()->warning("Reading file " + filename + " failed.");
-        std::cerr << "Koniec read\n";
 }
 
 

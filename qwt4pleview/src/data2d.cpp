@@ -4,7 +4,6 @@
 #include <QWidget>
 #include <QProgressDialog>
 #include <QImage>
-#include <memory>
 
 #ifndef INFINITY
 #include <limits>
@@ -156,6 +155,7 @@ bool PleDataReader::readLine(QIODevice *device, double *x, double *y, double *z)
 std::unique_ptr<GridData2D> PleDataReader::read(QIODevice * device, QWidget *parent) {
     QProgressDialog progress("Opening file...", "Cancel",
                                                    0, device->size(), parent);
+
     progress.show();
     int pos0 = device->pos();
     QVector<double> xs, ys, values;
@@ -223,6 +223,68 @@ QVector<double> GridData2D::xValues() const {
 
 QVector<double> GridData2D::yValues() const {
     return _y;
+}
+
+
+void GridData2D::serializeToXml(QXmlStreamWriter * writer, const QString & tagName) const {
+    writer->writeStartElement(tagName);
+    writeXmlAttribute(writer, "xsize", _x.size());
+    writeXmlAttribute(writer, "ysize", _y.size());
+
+    QByteArray array = QByteArray((char*) _x.data(), _x.size() * sizeof(double));
+    writer->writeTextElement("xs", array.toBase64());
+
+    array = QByteArray((char*) _y.data(), _y.size() * sizeof(double));
+    writer->writeTextElement("ys", array.toBase64());
+
+    array = QByteArray((char*) _values.data(), _values.size() * sizeof(double));
+    writer->writeTextElement("values", array.toBase64());
+
+    writer->writeEndElement();
+}
+
+
+// Helper function for unserializeFromXml(QXmlStreamReader*)
+void read_vector_xml(QXmlStreamReader * reader, QVector<double> *v, int decl_size) {
+    // reader.tokenType() == StartElement
+    while(!reader->isEndElement() && !reader->isCharacters())
+        reader->readNext();
+    if(reader->isCharacters()) {
+        QByteArray array = QByteArray::fromBase64(reader->text().toString().toLatin1());
+        if(array.size() / sizeof(double) < decl_size)
+            decl_size = array.size() / sizeof(double);
+        if(decl_size >= 0) {
+            v->resize(decl_size);
+            for(int i = 0; i < decl_size; i++)
+              (*v)[i] = ((double*) array.data())[i];
+        }
+        seekEndElement(reader);   //reader->skipCurrentElement();
+    }
+}
+
+    /**
+     Update properties retrieved from XML stream. The previous
+     token had type StartElement. The function should read
+     all data till its EndElement is read.
+     */
+void GridData2D::unserializeFromXml(QXmlStreamReader * reader) {
+    int xsize = _x.size(), ysize = _y.size();
+    readXmlAttribute(reader, "xsize", &xsize);
+    readXmlAttribute(reader, "ysize", &ysize);
+
+    QString child;
+    do {
+        child = seekChildElement(reader, "xs", "ys", "values");
+
+        if(child == "xs")
+            read_vector_xml(reader, &_x, xsize);
+        else if(child == "ys")
+                read_vector_xml(reader, &_y, ysize);
+        else if(child == "values")
+                read_vector_xml(reader, &_values, xsize * ysize);
+    } while (!child.isEmpty());
+
+    dataChanged();
 }
 
 

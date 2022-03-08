@@ -33,6 +33,7 @@ void DoubleMapItem::DoubleMapRenderThread::setSecondData(std::shared_ptr<const G
     dataAbort = true; // tell the thread to pause and release dataMutex
     dataMutex.lock();
     dataAbort = false;
+
     d_data2 = data->clone();
     dataMutex.unlock();
     offlineRender();

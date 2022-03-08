@@ -19,21 +19,11 @@
 #include "colormap.h"
 
 
-// This is a stupid workaround to force CMake to run MOC on this file
-class Dummy : public QObject {
-    Q_OBJECT
-};
 
-
-class QWT_EXPORT GridData2D : public SaveableModel {
-    P_SAVEABLE_GADGET
+class QWT_EXPORT GridData2D : public Model {
 public:
     GridData2D();
     GridData2D(const QVector<double> &ys, const QVector<double> &xs, const QVector<double> &zs);
-
-    Q_PROPERTY(QVector<double> xs READ xValues WRITE setXValues STORED true)
-    Q_PROPERTY(QVector<double> ys READ yValues WRITE setYValues STORED true)
-    Q_PROPERTY(QVector<double> values READ rawData WRITE setRawData STORED true)
 
     double minX() const { return _minX; }
     double minY() const { return _minY; }
@@ -82,6 +72,19 @@ public:
     virtual std::shared_ptr<GridData2D> clone() const;
 
     GridData2D & operator=(const GridData2D &other);
+
+    /**
+     * Pickle all properties to XML stream. Do not write EndElement.
+     */
+    virtual void serializeToXml(QXmlStreamWriter * writer, const QString & tagName = "data") const;
+
+    /**
+     Update properties retrieved from XML stream. The previous
+     token had type StartElement. The function should read
+     all data till its EndElement is read.
+     */
+    virtual void unserializeFromXml(QXmlStreamReader * reader);
+
 
     /**
      * Prepare a graphics (map) of given area with given resolution and color scale.

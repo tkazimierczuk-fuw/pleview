@@ -45,7 +45,7 @@ private slots:
     void requestImport();
 
 signals:
-    void importTransform(QIODevice * device);
+    void importTransform(QIODevice * device, Engine::Contents);
 
 private:
     class ModelChangeAction;

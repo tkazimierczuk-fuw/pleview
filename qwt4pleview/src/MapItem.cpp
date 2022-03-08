@@ -77,6 +77,7 @@ void MapItem::MapRenderThread::setData(std::shared_ptr<const GridData2D> data)
     dataAbort = true; // tell the thread to pause and release dataMutex
     dataMutex.lock();
     dataAbort = false;
+
     d_data = data->clone();
     dataMutex.unlock();
     d_colormap.updateLimits(d_data->rawData());
