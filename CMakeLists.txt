@@ -27,10 +27,10 @@ include_directories(${Qt5OpenGL_INCLUDE_DIRS})
 
 add_definitions(${Qt5Widgets_DEFINITIONS})
 
+SET(BOOST_ROOT "")
 
 find_package(Boost REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
-
 
 
 INCLUDE_DIRECTORIES(

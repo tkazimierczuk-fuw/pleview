@@ -1,0 +1,10 @@
+{
+  "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
+  "files.associations": {
+    "compare": "cpp",
+    "locale": "cpp",
+    "xlocinfo": "cpp",
+    "qpair": "cpp",
+    "qobject": "cpp"
+  }
+}
