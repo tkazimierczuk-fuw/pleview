@@ -206,7 +206,7 @@ void RangeVariableFilter::parseEditContents() {
         if(stream.status() != QTextStream::ReadCorruptData)
             valuesEditContents.append(tmp);
     }
- //   Pleview::log()->info(QString("[%1] %2 numbers recognized successfully").arg(name()).arg(valuesEditContents.size()));
+    Pleview::log()->info(QString("[%1] %2 numbers recognized successfully").arg(name()).arg(valuesEditContents.size()));
 }
 
 
@@ -214,6 +214,7 @@ void RangeVariableFilter::parseEditContents() {
 void RangeVariableFilter::updateFromGui() {
     _varname = nameEdit->text().trimmed();
     _type = (Type) typeCombo->currentIndex();
+    _defType = (DefinitionType) defTypeCombo->currentIndex();
 }
 
 

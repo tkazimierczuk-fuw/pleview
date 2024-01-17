@@ -2,3 +2,4 @@ build/
 out/
 CMakeLists.txt.user
 CMakeSettings.json
+.cache
