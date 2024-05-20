@@ -223,9 +223,9 @@ GET_TARGET_PROPERTY(QtXml_dll          Qt5::Xml          LOCATION)
 IF(WIN32)
      INSTALL(FILES
          ${QtCore_dll} ${QtGui_dll} ${QtWidgets_dll} ${QtSvg_dll} ${QtPrintSupport_dll} ${QtOpenGL_dll} ${QtXml_dll}
-         ${_qt5Core_install_prefix}/bin/icudt54.dll
-         ${_qt5Core_install_prefix}/bin/icuin54.dll
-         ${_qt5Core_install_prefix}/bin/icuuc54.dll
+       #  ${_qt5Core_install_prefix}/bin/icudt54.dll
+       #  ${_qt5Core_install_prefix}/bin/icuin54.dll
+       #  ${_qt5Core_install_prefix}/bin/icuuc54.dll
          DESTINATION .
      )
 
