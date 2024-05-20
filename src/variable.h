@@ -23,6 +23,7 @@ public:
     Type type;
 
     QVector<double> values;
+    QVector<double> errors;
 
     Variable();
     Variable(Type _type, QVector<double> values);
@@ -51,8 +52,11 @@ public:
     //! Return a value for given index
     double value(int x, int y) const;
 
+    //! Return a value of error for given index
+    double error(int x, int y) const;
+
     //! Set a value at given index
-    void setValue(int x, int y, double value);
+    void setValue(int x, int y, double value, double error = -qInf());
     
     //! @see Xml::serializeComponents(QXmlStreamWriter*)
     virtual void serializeComponents(QXmlStreamWriter * writer) const;
@@ -107,7 +111,7 @@ public:
 
 
     QMap<QString, double> currentValues() const;
-    void setCurrentValue(const QString & name, double value);
+    void setCurrentValue(const QString & name, double value, double error = -qInf());
     void setCurrentValues(const QMap<QString, double> &variables);
 
     //! @see Xml::serializeComponents(QXmlStreamWriter*)

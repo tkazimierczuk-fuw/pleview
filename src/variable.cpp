@@ -8,10 +8,11 @@ Variable::Variable() : type(None) {
 
 Variable::Variable(Type _type, QVector<double> _values) : type(_type), values(_values) {
     fixed = false;
+    errors.resize(values.size());
 }
 
 
-Variable::Variable(const Variable &other) : type(other.type), values(other.values) {
+Variable::Variable(const Variable &other) : type(other.type), values(other.values), errors(other.errors){
     name = other.name;
     fixed = other.fixed;
 }
@@ -20,6 +21,7 @@ Variable::Variable(const Variable &other) : type(other.type), values(other.value
 Variable & Variable::operator=(const Variable &other) {
     type = other.type;
     values = other.values;
+    errors = other.errors;
     name = other.name;
     fixed = other.fixed;
     return *this;
@@ -51,6 +53,7 @@ void Variable::serializeAttributes(QXmlStreamWriter *writer) const {
 void Variable::serializeComponents(QXmlStreamWriter *writer) const {
     for(int i = 0; i < values.size(); i++) {
         writer->writeStartElement("v");
+        writer->writeAttribute("err", QString::number(errors.value(i)));
         writer->writeCharacters(QString::number(values[i]));
         writer->writeEndElement();
     }
@@ -59,6 +62,7 @@ void Variable::serializeComponents(QXmlStreamWriter *writer) const {
 
 void Variable::unserializeFromXml(QXmlStreamReader * reader) {
     values.clear();
+    errors.clear();
     Model::unserializeFromXml(reader);
 }
 
@@ -90,6 +94,7 @@ void Variable::unserializeAttribute(const QXmlStreamAttribute &attribute) {
 
 void Variable::unserializeComponent(QXmlStreamReader *reader) {
     if(reader->name() == "v") {
+        errors.append(reader->attributes().value("err").toString().toDouble());
         QString text = reader->readElementText();
         values.append(text.toDouble());
     }
@@ -110,20 +115,57 @@ double Variable::value(int x, int y) const {
     }
 }
 
+double Variable::error(int x, int y) const {
 
-void Variable::setValue(int x, int y, double value) {
+    switch(type) {
+
+    case Value:
+
+        return errors.value(0);
+
+    case Row:
+
+        return errors.value(x);
+
+    case Col:
+
+        return errors.value(y);
+
+    default:
+
+        return 0;
+
+    }
+
+}
+
+void Variable::setValue(int x, int y, double value, double error) {
+
+    if(values.size() != errors.size()){ // needed because we expose values variable outside class
+        errors.resize(values.size());
+    }
+
     switch(type) {
     case Value:
-        if(values.size() > 0)
+        if(values.size() > 0) {
             values[0] = value;
+            if(error != -qInf())
+                errors[0] = error;
+        }
         break;
     case Row:
-        if(values.size() > x)
+        if(values.size() > x) {
             values[x] = value;
+            if(error != -qInf())
+                errors[x] = error;
+        }
         break;
     case Col:
-        if(values.size() > y)
+        if(values.size() > y) {
             values[y] = value;
+            if(error != -qInf())
+                errors[y] = error;
+        }
         break;
     default:
         break;
@@ -165,7 +207,7 @@ QMap<QString, double> VariablePool::currentValues() const {
 }
 
 
-void VariablePool::setCurrentValue(const QString & name, double value) {
+void VariablePool::setCurrentValue(const QString & name, double value, double error) {
     for(int i = 0; i < this->size(); i++)
         if(this->at(i).name == name) {
             int nx = 0, ny = 0;
@@ -173,7 +215,7 @@ void VariablePool::setCurrentValue(const QString & name, double value) {
                 nx = engine->currentCrossSection().n[Pleview::X];
                 ny = engine->currentCrossSection().n[Pleview::Y];
             }
-            (*this)[i].setValue(nx, ny, value);
+            (*this)[i].setValue(nx, ny, value, error);
             emit currentValuesChanged();
             return;
         }
@@ -220,7 +262,7 @@ void VariablePool::changeCurrentCrossSection() {
         emit currentValuesChanged();
 }
 
-
+// ignores error value
 bool Variable::operator==(const Variable &other) const {
     return type == other.type && values == other.values && name == other.name && fixed == other.fixed;
 }

@@ -53,6 +53,7 @@ private:
     Item findItem(const QString &name);
     Item createItem(int fitvarIndex);
     void copy(const Item & item);
+    void copyErrors(const Item & item);
 
     int spectrum;
     QVector<Item>  _varWidgets;

@@ -1,13 +1,12 @@
+CMAKE_MINIMUM_REQUIRED (VERSION 3.5)
+
 PROJECT(pleview)
 
-CMAKE_MINIMUM_REQUIRED (VERSION 3.0)
-
+SET(CMAKE_BUILD_TYPE Release)
 set(CMAKE_CXX_STANDARD 11)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 SET(CMAKE_AUTOMOC ON)
-
-SET(CMAKE_BUILD_TYPE Release)
 
 SET(QT_USE_QTXML true)
 SET(QT_USE_QTSVG true)
@@ -27,7 +26,7 @@ include_directories(${Qt5OpenGL_INCLUDE_DIRS})
 
 add_definitions(${Qt5Widgets_DEFINITIONS})
 
-SET(BOOST_ROOT "")
+SET(BOOST_ROOT "C:\\local\\boost_1_85_0\\lib64-msvc-14.3\\cmake\\")
 
 find_package(Boost REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
@@ -67,7 +66,7 @@ ADD_SUBDIRECTORY(voro)
 
 
 SET(PLEVIEW_VERSION_MAJOR "0")
-SET(PLEVIEW_VERSION_MINOR "pre19")
+SET(PLEVIEW_VERSION_MINOR "20")
 SET(PLEVIEW_VERSION "${PLEVIEW_VERSION_MAJOR}.${PLEVIEW_VERSION_MINOR}")
 ADD_DEFINITIONS("-DPLEVIEW_VERSION=\"${PLEVIEW_VERSION}\"")
 
@@ -220,13 +219,12 @@ GET_TARGET_PROPERTY(QtPrintSupport_dll Qt5::PrintSupport LOCATION)
 GET_TARGET_PROPERTY(QtOpenGL_dll       Qt5::OpenGL       LOCATION)
 GET_TARGET_PROPERTY(QtXml_dll          Qt5::Xml          LOCATION)
 
- 
 IF(WIN32)
      INSTALL(FILES
          ${QtCore_dll} ${QtGui_dll} ${QtWidgets_dll} ${QtSvg_dll} ${QtPrintSupport_dll} ${QtOpenGL_dll} ${QtXml_dll}
-         ${_qt5Core_install_prefix}/bin/icudt54.dll
-         ${_qt5Core_install_prefix}/bin/icuin54.dll
-         ${_qt5Core_install_prefix}/bin/icuuc54.dll
+        # ${_qt5Core_install_prefix}/bin/icudt54.dll
+        # ${_qt5Core_install_prefix}/bin/icuin54.dll
+        # ${_qt5Core_install_prefix}/bin/icuuc54.dll
          DESTINATION .
      )
 
@@ -253,7 +251,7 @@ IF(WIN32)
     SET (CPACK_NSIS_MUI_ICON "${CMAKE_CURRENT_SOURCE_DIR}/img/icon-installer.ico")
     SET (CPACK_NSIS_MUI_UNIICON "${CMAKE_CURRENT_SOURCE_DIR}/img/icon-uninstaller.ico")
     #SET (CPACK_PACKAGE_ICON "${CMAKE_CURRENT_SOURCE_DIR}/packaging/NSIS\\\\qpid-install-banner.bmp")
-    
+
     # There is a bug in NSI that does not handle full unix paths properly. Make
     # sure there is at least one set of four (4) backlasshes.
     SET(CPACK_NSIS_INSTALLED_ICON_NAME "pleview.exe")
@@ -263,7 +261,6 @@ IF(WIN32)
     SET(CPACK_NSIS_CONTACT "Tomasz.Kazimierczuk@fuw.edu.pl")
     SET(CPACK_NSIS_MODIFY_PATH ON)
 ENDIF(WIN32)
-
 INCLUDE(CPack)
 
 CONFIGURE_FILE(

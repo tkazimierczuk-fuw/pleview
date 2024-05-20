@@ -75,6 +75,28 @@ void VariableWidget::copy(const Item & item) {
     QApplication::clipboard()->setText(string);
 }
 
+void VariableWidget::copyErrors(const Item & item) {
+
+    QString string;
+
+    QTextStream out(&string);
+
+    out.setRealNumberPrecision(10);
+
+    QVector<double> &vec = (*varPool)[item.fitVarIndex].errors;
+
+    for(int i = 0; i < vec.size(); i++) {
+
+        out << vec[i] << "\n";
+
+    }
+
+    out.flush();
+
+    QApplication::clipboard()->setText(string);
+
+}
+
 
 void VariableWidget::optionsRequested(const QString &name) {
     Item item = findItem(name);
@@ -82,6 +104,7 @@ void VariableWidget::optionsRequested(const QString &name) {
         return;
 
     QAction copyAll(QIcon(":icons/actions/edit-copy.svg"), "Copy for all spectra", this);
+    QAction copyErrorsOnly(QIcon(":icons/actions/edit-copy.svg"), "Copy uncertainity for all spectra", this);
     QAction pasteAll(QIcon(":icons/actions/edit-paste.svg"), "Paste for all spectra", this);
     QAction setAll("Set value for all spectra", this);
     QAction setValueByMouse("Set value by mouse click", this);
@@ -90,6 +113,7 @@ void VariableWidget::optionsRequested(const QString &name) {
         fixAll.setText("Release (unfix) for all spectra");
     QList<QAction*> list;
     list.append(&copyAll);
+    list.append(&copyErrorsOnly);
     list.append(&pasteAll);
     list.append(&setAll);
     list.append(&setValueByMouse);
@@ -97,6 +121,8 @@ void VariableWidget::optionsRequested(const QString &name) {
     QAction * action = QMenu::exec(list, item.optionButton->mapToGlobal(QPoint(0,0)), 0, item.optionButton);
     if(action == &copyAll) {
         copy(item);
+    }else if(action == &copyErrorsOnly) {
+        copyErrors(item);
     } else if (action == &pasteAll) {
         QMessageBox::critical(this, "Not implemented", "Feature not implemented yet");
     } else if(action == &fixAll) {

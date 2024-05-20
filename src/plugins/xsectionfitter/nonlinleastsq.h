@@ -50,6 +50,9 @@ public:
     //! Return map of used parameters
     QMap<QString, double*> parameters() const;
 
+    //! Return map of determined uncertainties from fitting
+    QMap<QString, double> uncertainties() const;
+
     //TODO: implement alternative starting points
 
     //! Perform the fitting
@@ -59,6 +62,9 @@ public:
     double chi2() const;
 
 private:
+    //! Calculate uncertainities from covariance matrix
+    void calculateUncertainities();
+
     //! Sets parameter values; order of parameters as in iterating through _vars map.
     void setParameters(const double *par);
 
@@ -68,6 +74,7 @@ private:
     mu::Parser * _func;
     QVector<Point3D> _points;
     QMap<QString, double*> _vars;
+    QMap<QString, double> _uncert;
 };
 
 #endif // NONLINLEASTSQ_H
